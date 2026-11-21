@@ -1,0 +1,57 @@
+[project]
+name = "bogota-syntax"
+version = "0.0.0"
+description = "Open, reproducible street-network centrality for Bogotá, published as map tiles."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Gregorio Maya" }]
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+# Runtime dependencies are added with `uv add` once the network source and
+# analysis library are decided (see docs/decisions/).
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/gregmaya/bogota-syntax"
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/bogota_syntax"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes: unused imports, undefined names
+    "I",   # import sorting
+    "B",   # bugbear: likely bugs (mutable defaults, etc.)
+    "UP",  # pyupgrade: modern syntax for py312
+    "SIM", # simplifications
+    "RUF", # ruff-specific checks
+]
+
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*" = ["E402"] # imports after markdown/setup cells
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
