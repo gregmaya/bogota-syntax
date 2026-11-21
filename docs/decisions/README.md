@@ -6,5 +6,8 @@ ADRs are immutable once accepted. To change a decision, write a new ADR that sup
 
 | ADR | Title | Status | Date |
 | --- | --- | --- | --- |
+| [0001](0001-code-licence.md) | Code licence: MIT, with AGPL-3.0 dependencies noted | Accepted | 2026-11-21 |
+| [0002](0002-output-data-licence.md) | Output data licence: ODbL 1.0 | Accepted | 2026-11-21 |
+| [0006](0006-crs-and-formats.md) | CRS and file formats, same as bogota-pop | Accepted | 2026-11-21 |
 
 New ADRs copy [template.md](template.md) and take the next number.
