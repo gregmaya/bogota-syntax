@@ -1,0 +1,27 @@
+name: Bug · Error
+description: Something in the pipeline fails or gives a wrong result. · Algo del pipeline falla o da un resultado incorrecto.
+title: "English title · Título en español"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English and Spanish, and spell out acronyms the first time ([glossary](https://github.com/gregmaya/bogota-syntax/blob/main/docs/glossary.md)).
+        Escribe en inglés y español, y escribe las siglas completas la primera vez ([glosario](https://github.com/gregmaya/bogota-syntax/blob/main/docs/glossary.md)).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened · Qué pasó
+      description: Command you ran, what you expected, what you got. · Comando que corriste, qué esperabas y qué obtuviste.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output · Salida del error
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version · Versión
+      description: Release tag or commit. · Etiqueta de la versión o commit.
