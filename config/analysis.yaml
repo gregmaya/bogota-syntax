@@ -1,0 +1,25 @@
+# Analysis settings. No magic numbers in code: everything tunable lives here.
+# See docs/decisions/0003-network-source.md and 0004-study-extent.md.
+
+# Centrality distance thresholds, in metres (EPSG:9377).
+distances: [400, 800, 1200, 1600, 2000, 5000]
+
+pilot:
+  # The pilot areas are drawn in the viewer as dotted outlines. They are not a
+  # computation boundary.
+  areas: data/renobo_selection.gpkg
+  # Live area = pilot areas buffered by this margin. Results are reported here.
+  live_margin_m: 5000
+
+# Dead buffer around the live area, used for routing only.
+# Effective width = max(buffer_min_m, max(distances)).
+buffer_min_m: 5000
+
+scenarios:
+  # Every scenario is a subset of the one cleaned network.
+  base:
+    fuente: [mvi, osm]
+  # One extra scenario per raw ESTADO_VIA code in SDP eje-vial: base + the axes with that code.
+  # Codes are listed as found in the data until SDP confirms their meaning.
+  estado_via_codes: [0, 19, 20, 21]
+  estado_via_labels: {} # e.g. {20: "existente"}, once confirmed
