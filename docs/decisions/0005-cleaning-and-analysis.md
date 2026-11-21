@@ -1,6 +1,6 @@
 # ADR-0005: Cleaning with neatnet, analysis with cityseer
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
@@ -9,8 +9,7 @@ Raw street data has dual carriageways, tiny roundabouts and broken connections, 
 
 ## Decision
 
-- **neatnet does all the cleaning.** It runs once, on the full joined network, including every POT axis whatever its `ESTADO_VIA` (ADR-0003). The network is in EPSG:9377, which is in metres as neatnet needs, and cleaning starts from neatnet's default parameters.
-- **Scenarios are filters, not re-cleans.** Each scenario takes its segments from the one cleaned network by `fuente` and `ESTADO_VIA`, and is built as its own cityseer network.
+- **neatnet does all the cleaning.** It runs once, on the full joined network (ADR-0003). The network is in EPSG:9377, which is in metres as neatnet needs, and cleaning starts from neatnet's default parameters. If scenarios are added later, they are subsets of that one cleaned network, never cleaned again, so the same street stays the same segment across scenarios.
 - **cityseer only analyses.** The cleaned lines are loaded with `CityNetwork.from_geopandas`, with its own cleaning turned off as far as its API allows. Then `set_boundary` is applied (ADR-0004), and `centrality_shortest` / `centrality_simplest` are run.
 - **Not yet:** momepy.
 
@@ -21,6 +20,6 @@ Raw street data has dual carriageways, tiny roundabouts and broken connections, 
 
 ## Consequences
 
-- **To check in the first task:** which `from_geopandas` values actually turn cleaning off (for example `remove_fillers=False`, `remove_danglers=0`, `merge_parallel_dist=0`), and neatnet's licence and its runtime at buffered-pilot scale.
+- **To check in the first task:** whether `neatify` keeps segment attributes (such as the source of each line); which `from_geopandas` values actually turn cleaning off (for example `remove_fillers=False`, `remove_danglers=0`, `merge_parallel_dist=0`), and neatnet's licence and its runtime at buffered-pilot scale.
 - Every neatnet run writes a before/after review layer, so the cleaning can be checked on the map.
 - neatnet is tested on street lines only. OSM footway, sidewalk and service tags are filtered before cleaning, using the same filter in both scenarios.

@@ -12,10 +12,9 @@ Este repositorio construye una red vial de Bogotá, calcula medidas de centralid
 
 El método en breve:
 
-1. Unir los ejes viales oficiales dentro de Bogotá con OpenStreetMap (OSM) por fuera, para que la red se extienda mucho más allá del área de estudio y se eviten los efectos de borde.
-2. Construir dos escenarios. **Actual** es la red tal como existe. **Propuesto** agrega las vías proyectadas del Plan de Ordenamiento Territorial (POT, Decreto 555 de 2021).
-3. Limpiar la red con [neatnet](https://uscuni.org/neatnet/).
-4. Calcular la centralidad con [cityseer](https://cityseer.benchmarkurbanism.com/). Los resultados se reportan solo dentro del área de estudio; el área de amortiguamiento solo se usa para calcular las rutas.
+1. Unir los ejes viales oficiales dentro de Bogotá con OpenStreetMap (OSM) por fuera, para que la red se extienda mucho más allá del área de estudio y se eviten los efectos de borde. Si la unión resulta demasiado difícil, la v1 usa OSM en toda el área.
+2. Limpiar la red con [neatnet](https://uscuni.org/neatnet/).
+3. Calcular la centralidad con [cityseer](https://cityseer.benchmarkurbanism.com/). Los resultados se reportan solo dentro del área de estudio; el área de amortiguamiento solo se usa para calcular las rutas.
 
 Las primeras etapas cubren una selección de proyectos de renovación urbana de RENOBO en el centro de Bogotá. La ciudad completa viene después. La razón de cada decisión queda en un registro de decisión de arquitectura (ADR, por sus siglas en inglés) en [docs/decisions/](docs/decisions/).
 
@@ -24,7 +23,7 @@ Las primeras etapas cubren una selección de proyectos de renovación urbana de 
 | Fuente | Entidad | Uso | Licencia |
 | --- | --- | --- | --- |
 | [Mapa de Referencia](https://datosabiertos.bogota.gov.co/dataset/mapa-de-referencia), capa *Malla Vial* | IDECA / UAECD | Red vial actual dentro de Bogotá; límite de la ciudad | CC BY 4.0 |
-| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Vías arteriales proyectadas (escenario Propuesto) | CC BY 4.0 |
+| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Vías arteriales proyectadas del POT, para escenarios futuros (no en la v1) | CC BY 4.0 |
 | [Red infraestructura vial](https://datosabiertos.bogota.gov.co/dataset/red-infraestructura-vial-bogota-d-c) | SDP | Corredores de reserva vial, como referencia | CC BY 4.0 |
 | [Proyecto de RenoBo](https://datosabiertos.bogota.gov.co/dataset/proyecto-de-renobo) | RENOBO | Áreas de estudio del piloto | CC BY 4.0 |
 | [OpenStreetMap](https://www.openstreetmap.org/copyright) | Colaboradores de OSM | Red vial por fuera de Bogotá | ODbL 1.0 |
@@ -38,6 +37,7 @@ curl "https://datosabiertos.bogota.gov.co/api/3/action/package_show?id=eje-vial-
 ## Trabajo futuro
 
 - **Transporte público.** TransMilenio publica la programación del SITP (Sistema Integrado de Transporte Público) en formato [GTFS](https://datosabiertos.bogota.gov.co/dataset/especificacion-gtfs-general-transport-feed-specification-sitp) (General Transit Feed Specification). Con este se podría agregar el acceso a paraderos y estaciones, o una centralidad por tiempo de viaje que combine caminata y transporte público. Su licencia es CC BY-SA 4.0, que choca con la licencia ODbL de los resultados (ADR-0002). Usarlo requiere primero su propia decisión.
+- **Escenarios.** Comparar la red actual con las vías proyectadas del Plan de Ordenamiento Territorial (POT, Decreto 555 de 2021), usando los ejes viales de la SDP.
 - **Morfología.** Medidas de forma urbana con [momepy](https://docs.momepy.org/), como métricas de manzana, predio y edificación junto a la centralidad.
 
 ## Entorno de desarrollo

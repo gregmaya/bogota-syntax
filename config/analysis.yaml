@@ -15,11 +15,4 @@ pilot:
 # Effective width = max(buffer_min_m, max(distances)).
 buffer_min_m: 5000
 
-scenarios:
-  # Every scenario is a subset of the one cleaned network.
-  base:
-    fuente: [mvi, osm]
-  # One extra scenario per raw ESTADO_VIA code in SDP eje-vial: base + the axes with that code.
-  # Codes are listed as found in the data until SDP confirms their meaning.
-  estado_via_codes: [0, 19, 20, 21]
-  estado_via_labels: {} # e.g. {20: "existente"}, once confirmed
+# No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.
