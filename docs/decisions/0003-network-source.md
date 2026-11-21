@@ -1,6 +1,6 @@
 # ADR-0003: Network source: official data inside Bogotá, OSM outside, OSM-only fallback
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
