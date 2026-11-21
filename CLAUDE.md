@@ -7,7 +7,7 @@ Decisions live in `docs/decisions/` as ADRs. Read them before changing anything 
 ## Current status
 
 - Phase: **0, setup** (update this line when a phase closes).
-- ADRs 0001–0006 written. 0003 and 0004 are still Proposed; 0005 Accepted. Not decided yet: which centrality measures, orchestration, CLI.
+- ADRs 0001–0006 written. 0003 is still Proposed; 0004 and 0005 Accepted. Not decided yet: which centrality measures, orchestration, CLI.
 - Distances: 400, 800, 1200, 1600, 2000 and 5000 m (`config/analysis.yaml`).
 - Pilot: the 36 RENOBO polygons in `data/renobo_selection.gpkg` are drawn as dotted outlines. The live area is those polygons + 5 km, and the network is the live area + a 5 km dead buffer (ADR-0004).
 - v1 is one network, with no scenarios: MVI inside Bogotá + OSM outside. If the join at the boundary proves too hard, fall back to OSM only, recorded in a new ADR (ADR-0003). The first task is the join and its review layers.

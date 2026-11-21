@@ -1,6 +1,6 @@
 # ADR-0004: Study extent, buffer and live nodes
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-21
 
 ## Context
