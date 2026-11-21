@@ -1,0 +1,89 @@
+# ── Project data (never committed) ────────────────────────────────────────────
+# Raw downloads, built networks and tiles are rebuilt by the pipeline.
+data/*
+!data/.gitkeep
+
+# Geospatial and tabular outputs
+*.parquet
+*.geoparquet
+*.gpkg
+*.gpkg-journal
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.geojson
+*.geojsonl
+*.fgb
+*.pmtiles
+*.mbtiles
+*.duckdb
+*.duckdb.wal
+*.zip
+
+# Street-network sources and graph formats
+*.osm
+*.osm.pbf
+*.pbf
+*.o5m
+*.graphml
+*.gml
+*.gexf
+*.pkl
+*.pickle
+
+# OSMnx HTTP cache
+cache/
+
+# Small, committed test fixtures are the exception.
+!tests/fixtures/**
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# Environments (uv creates .venv/; uv.lock IS committed)
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.hypothesis/
+
+# Notebooks (exploration only)
+.ipynb_checkpoints/
+
+# Pipeline / docs build artefacts
+.snakemake/
+site/
+_site/
+.quarto/
+
+# ── Editors and OS ────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.swp
+
+# Claude Code local settings
+.claude/settings.local.json

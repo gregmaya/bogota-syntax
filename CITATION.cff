@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software or its data outputs, please cite it as below.
+  For data, cite the specific release you used.
+type: software
+title: "bogota-syntax: open street-network centrality for Bogotá D.C."
+abstract: >-
+  An open, reproducible analysis of street-network centrality for Bogotá D.C.,
+  published as map tiles for the Bogotá viewer. Code is MIT licensed.
+authors:
+  - family-names: Maya
+    given-names: Gregorio
+    orcid: "https://orcid.org/0009-0002-8285-7253"
+version: 0.0.0
+license: MIT
+repository-code: "https://github.com/gregmaya/bogota-syntax"
+keywords:
+  - street network
+  - network centrality
+  - space syntax
+  - urban morphology
+  - Bogotá
+  - Colombia
+  - PMTiles

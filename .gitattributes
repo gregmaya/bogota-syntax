@@ -1,0 +1,14 @@
+# Normalise line endings to LF in the repo
+* text=auto eol=lf
+
+# Binary formats: never diff or normalise
+*.parquet binary
+*.gpkg binary
+*.pmtiles binary
+*.pbf binary
+*.png binary
+*.jpg binary
+*.zip binary
+
+# uv.lock is generated; collapse it in GitHub diffs
+uv.lock linguist-generated=true -diff
