@@ -16,3 +16,5 @@ All notable changes to this project are recorded here. Each release covers data,
 - `bogota-syntax clean`: neatnet cleans MVI and OSM over their cleaning areas; every connected piece is labelled before and after, and the step stops if a piece is lost (ADR-0007).
 - ADR-0008: SDP arterial axes replace cleaned MVI arterials inside Bogotá; `scripts/adr0008_interchanges.py` tests it on seven interchanges.
 - Source `sdp_eje_vial` and `bogota-syntax arterials`: the axes swap runs city-wide and writes `mvi_arterial` plus review layers (ADR-0008).
+- `bogota-syntax arterials` closes gaps where SDP axes stop short of each other (`axis_snap_m`).
+- `bogota-syntax join`: MVI inside and OSM outside Bogotá, cut at the boundary and joined by connectors; review layers in `data/interim/join/` (ADR-0007).

@@ -59,3 +59,16 @@ def test_carriageways_replaced_by_axis_and_local_street_connected() -> None:
     assert set(edited["source"].dropna()) >= {"sdp_eje_vial", "axis_connector"}
     # The parallel local street 200 m away is untouched.
     assert (edited.geometry.length.round() == 1000).sum() == 2  # axis + that street
+
+
+def test_axis_gap_closed_within_snap_distance() -> None:
+    net = _gdf(
+        [
+            ("", [(0, 0), (500, 0)]),
+            ("", [(503, 0), (1000, 0)]),  # 3 m gap between two axis lines
+            ("", [(0, 500), (400, 500)]),  # far from anything
+        ]
+    ).assign(source="sdp_eje_vial")
+    gaps = arterials.close_axis_gaps(net, 10)
+    assert len(gaps) == 1  # both facing ends give the same segment; kept once
+    assert gaps.length.round().tolist() == [3]

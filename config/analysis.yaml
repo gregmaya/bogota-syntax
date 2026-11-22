@@ -97,5 +97,19 @@ arterials:
   arterial_types: [AC, AK]
   corridor_m: 60
   ramp_zone_m: 150
+  # SDP axes that should meet often stop short. An axis end that meets nothing is joined
+  # to the nearest line within axis_snap_m (227 such ends; 170 within 5 m, 188 within
+  # 10 m; 2026-11-22).
+  axis_snap_m: 10
+
+# Joining OSM (outside Bogotá) to MVI (inside) at the boundary (ADR-0007).
+join:
+  # OSM loose ends on the boundary are joined to MVI by a connector up to snap_m long:
+  # first to an MVI loose end on the boundary, else to the nearest MVI line.
+  # Provisional, pending review: at 25 m, 87% of OSM ends have an MVI line in reach;
+  # at 50 m, 91% (2026-11-22).
+  snap_m: 25
+  # Candidates up to this length are written for review, accepted or not.
+  candidate_max_m: 100
 
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.

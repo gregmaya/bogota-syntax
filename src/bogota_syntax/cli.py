@@ -94,7 +94,7 @@ def arterials() -> None:
     typer.echo(f"  removed: {s['removed_lines']:,} MVI lines, {s['removed_km']:,.0f} km")
     typer.echo(
         f"  connectors: {s['connectors']:,} (median {s['connector_median_m']:.1f} m, "
-        f"max {s['connector_max_m']:.1f} m)"
+        f"max {s['connector_max_m']:.1f} m); axis gaps closed: {s['axis_gaps']:,}"
     )
     typer.echo(
         f"  network: {s['lines_before']:,} -> {s['lines_after']:,} lines, "
@@ -103,4 +103,21 @@ def arterials() -> None:
     typer.echo(
         f"  dead ends {s['dead_ends_before']:,} -> {s['dead_ends_after']:,}; "
         f"pieces {s['pieces_before']} -> {s['pieces_after']}"
+    )
+
+
+@app.command()
+def join() -> None:
+    """Cut both sides at the Bogotá boundary and connect them (ADR-0007) -> data/interim/join/."""
+    from bogota_syntax.join import run
+
+    s = run(project_root())
+    typer.echo(f"  network: {s['lines']:,} lines, {s['km']:,.0f} km")
+    typer.echo(
+        f"  OSM ends on the boundary: {s['osm_boundary_ends']}; connected {s['connectors']}, "
+        f"unmatched {s['unmatched_osm_ends']}; MVI ends near boundary unmatched "
+        f"{s['unmatched_mvi_ends']}"
+    )
+    typer.echo(
+        f"  pieces: {s['pieces']} (main {s['main_km']:,.0f} km, others {s['other_km']:,.1f} km)"
     )

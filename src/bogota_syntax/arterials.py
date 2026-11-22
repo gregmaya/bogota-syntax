@@ -206,6 +206,34 @@ def guide(
     return {"removed": removed, "axes": ax, "connectors": conn, "edited": edited}
 
 
+def close_axis_gaps(network: gpd.GeoDataFrame, snap_m: float) -> gpd.GeoDataFrame:
+    """Connectors from axis dead ends to the nearest other line within `snap_m`.
+
+    SDP axes that should meet often stop a few metres short of each other (227 axis dead
+    ends city-wide, 170 within 5 m of another line, 2026-11-22). Returns the connectors,
+    `source = "axis_gap"`.
+    """
+    g = network.geometry.values
+    pts = np.concatenate([shapely.get_point(g, 0), shapely.get_point(g, -1)])
+    owner = np.concatenate([np.arange(len(g)), np.arange(len(g))])
+    keys = pd.Series([_key(c) for c in shapely.get_coordinates(pts)])
+    dead = keys.map(keys.value_counts()).values == 1
+    is_axis = (network["source"].values == "sdp_eje_vial")[owner]
+    tree = shapely.STRtree(g)
+    out = []
+    for p, li in zip(pts[dead & is_axis], owner[dead & is_axis], strict=True):
+        near = [i for i in tree.query(p.buffer(snap_m)) if i != li]
+        if not near:
+            continue
+        d = shapely.distance(p, g[near])
+        j = near[int(np.argmin(d))]
+        if 0 < d.min() <= snap_m:
+            out.append(LineString([p, shapely.ops.nearest_points(p, g[j])[1]]))
+    # Two facing ends produce the same segment twice; keep one.
+    out = list({shapely.normalize(c).wkb: c for c in out}.values())
+    return gpd.GeoDataFrame({"source": ["axis_gap"] * len(out)}, geometry=out, crs=network.crs)
+
+
 def dead_end_count(lines: gpd.GeoDataFrame) -> int:
     """Line ends that meet no other line end."""
     keys = [_key(p) for p in _endpoints(lines.geometry.values).reshape(-1, 2)]
@@ -237,10 +265,15 @@ def run(root) -> dict[str, float]:
     cleaned = cleaned.explode(ignore_index=True)
     cleaned = cleaned[cleaned.geom_type == "LineString"].reset_index(drop=True)
     out = guide(cleaned, axes, cfg["corridor_m"], cfg["arterial_types"], cfg["ramp_zone_m"])
-    network = neatnet.induce_nodes(out["edited"])
-    network["source"] = network["source"].fillna("mvi")
+    edited = out["edited"]
+    edited["source"] = edited["source"].fillna("mvi")
+    gaps = close_axis_gaps(edited, cfg["axis_snap_m"])
+    network = neatnet.induce_nodes(
+        gpd.GeoDataFrame(pd.concat([edited, gaps], ignore_index=True), crs=edited.crs)
+    )
     network.to_parquet(clean_dir / "mvi_arterial.parquet")
-    for name in ("removed", "axes", "connectors"):
+    out["axis_gaps"] = gaps
+    for name in ("removed", "axes", "connectors", "axis_gaps"):
         out[name].to_parquet(clean_dir / f"arterial_{name}.parquet")
     conn = out["connectors"]
     return {
@@ -249,6 +282,7 @@ def run(root) -> dict[str, float]:
         "removed_lines": len(out["removed"]),
         "removed_km": out["removed"].length.sum() / 1e3,
         "connectors": len(conn),
+        "axis_gaps": len(gaps),
         "connector_median_m": float(conn.length.median()) if len(conn) else 0.0,
         "connector_max_m": float(conn.length.max()) if len(conn) else 0.0,
         "lines_before": len(cleaned),
