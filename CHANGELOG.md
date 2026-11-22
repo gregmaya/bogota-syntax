@@ -18,3 +18,4 @@ All notable changes to this project are recorded here. Each release covers data,
 - Source `sdp_eje_vial` and `bogota-syntax arterials`: the axes swap runs city-wide and writes `mvi_arterial` plus review layers (ADR-0008).
 - `bogota-syntax arterials` closes gaps where SDP axes stop short of each other (`axis_snap_m`).
 - `bogota-syntax join`: MVI inside and OSM outside Bogotá, cut at the boundary and joined by connectors; review layers in `data/interim/join/` (ADR-0007).
+- `bogota-syntax arterials` restores removed lines that were the only link to the main network, and extends MVI dead ends onto a line within 10 m (`neatnet.extend_lines`).

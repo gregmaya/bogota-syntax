@@ -101,6 +101,11 @@ arterials:
   # to the nearest line within axis_snap_m (227 such ends; 170 within 5 m, 188 within
   # 10 m; 2026-11-22).
   axis_snap_m: 10
+  # Last step on the MVI side: dead ends are extended straight ahead onto a line within
+  # this distance (neatnet.extend_lines), closing small gaps in MVI. Most MVI islands
+  # are already islands in raw MVI; at 10 m, 148 pieces became 102 in the test of
+  # 2026-11-22 (5 m: 111, 20 m: 81 but ~1,200 dead ends closed).
+  extend_lines_m: 10
 
 # Joining OSM (outside Bogotá) to MVI (inside) at the boundary (ADR-0007).
 join:

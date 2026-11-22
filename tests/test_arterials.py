@@ -72,3 +72,26 @@ def test_axis_gap_closed_within_snap_distance() -> None:
     gaps = arterials.close_axis_gaps(net, 10)
     assert len(gaps) == 1  # both facing ends give the same segment; kept once
     assert gaps.length.round().tolist() == [3]
+
+
+def test_removed_sole_link_is_restored() -> None:
+    # main street -- link (removed) -- side street; the side street was in the main piece.
+    net = _gdf([("CL", [(0, 0), (1000, 0)]), ("CL", [(0, 200), (300, 200)])])
+    removed = _gdf([("AK", [(0, 0), (0, 200)])])
+    net["_cid"], removed["_cid"] = [0, 2], [1]
+    out, restored = arterials.restore_links(net.assign(source="mvi"), removed, {0, 1, 2})
+    assert len(restored) == 1 and restored["source"].iloc[0] == "mvi_restored"
+    assert len(out) == 3
+
+
+def test_dead_end_extended_only_when_it_meets_a_line() -> None:
+    net = _gdf(
+        [
+            ("CL", [(0, 0), (1000, 0)]),
+            ("KR", [(500, 8), (500, 300)]),  # stops 8 m short of the street: extended
+            ("KR", [(800, 300), (800, 100)]),  # 100 m short: left as a cul-de-sac
+        ]
+    )
+    _, extended = arterials.extend_dead_ends(net, 10)
+    assert len(extended) == 1
+    assert round(extended["added_m"].iloc[0]) == 8

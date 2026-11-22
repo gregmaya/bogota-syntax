@@ -234,6 +234,66 @@ def close_axis_gaps(network: gpd.GeoDataFrame, snap_m: float) -> gpd.GeoDataFram
     return gpd.GeoDataFrame({"source": ["axis_gap"] * len(out)}, geometry=out, crs=network.crs)
 
 
+def restore_links(
+    network: gpd.GeoDataFrame,
+    removed: gpd.GeoDataFrame,
+    was_main: set,
+    max_rounds: int = 10,
+) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+    """Put back removed lines that were the only link to the main network.
+
+    `network` and `removed` carry `_cid`, the id of the cleaned MVI line each came from;
+    `was_main` holds the ids that were in the main piece before the swap. Any line of the
+    network that was in the main piece but no longer is marks an orphaned piece; removed
+    lines touching it are restored (`source = "mvi_restored"`), round by round, until no
+    orphan is left or nothing more can be restored. Returns (network, restored lines).
+    """
+    import neatnet
+
+    pool = removed.copy()
+    restored = []
+    for _ in range(max_rounds):
+        pieces = label_pieces(network)
+        main = network.length.groupby(pieces).sum().idxmax()
+        orphan = network[(pieces != main).values & network["_cid"].isin(was_main).values]
+        if orphan.empty or pool.empty:
+            break
+        tree = shapely.STRtree(pool.geometry.values)
+        hit = np.unique(tree.query(orphan.geometry.values, predicate="dwithin", distance=0.01)[1])
+        if not len(hit):
+            break
+        back = pool.iloc[hit].assign(source="mvi_restored")
+        restored.append(back)
+        pool = pool.drop(pool.index[hit])
+        network = neatnet.induce_nodes(
+            gpd.GeoDataFrame(pd.concat([network, back], ignore_index=True), crs=network.crs)
+        )
+    restored_gdf = (
+        gpd.GeoDataFrame(pd.concat(restored, ignore_index=True), crs=network.crs)
+        if restored
+        else removed.iloc[:0]
+    )
+    return network, restored_gdf
+
+
+def extend_dead_ends(
+    network: gpd.GeoDataFrame, tolerance_m: float
+) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+    """Close small gaps in MVI: extend dead ends straight ahead onto a line within
+    `tolerance_m` (neatnet.extend_lines), then node the network.
+
+    Returns (network, extended lines with `added_m`). A cul-de-sac whose continuation
+    meets nothing within the tolerance is left as it is.
+    """
+    import neatnet
+
+    before = network.length.values
+    out = neatnet.extend_lines(network.reset_index(drop=True), tolerance_m)
+    added = out.length.values - before
+    extended = out[added > 1e-6].assign(added_m=added[added > 1e-6])
+    return neatnet.induce_nodes(out), extended
+
+
 def dead_end_count(lines: gpd.GeoDataFrame) -> int:
     """Line ends that meet no other line end."""
     keys = [_key(p) for p in _endpoints(lines.geometry.values).reshape(-1, 2)]
@@ -264,6 +324,10 @@ def run(root) -> dict[str, float]:
     axes = select_axes(eje, raw, cfg["axis_match_m"], cfg["min_axis_on_mvi"])
     cleaned = cleaned.explode(ignore_index=True)
     cleaned = cleaned[cleaned.geom_type == "LineString"].reset_index(drop=True)
+    cleaned["_cid"] = np.arange(len(cleaned))
+    noded = neatnet.induce_nodes(cleaned)
+    before = label_pieces(noded)
+    was_main = set(noded["_cid"][before == 0])  # piece 0 is the longest
     out = guide(cleaned, axes, cfg["corridor_m"], cfg["arterial_types"], cfg["ramp_zone_m"])
     edited = out["edited"]
     edited["source"] = edited["source"].fillna("mvi")
@@ -271,9 +335,16 @@ def run(root) -> dict[str, float]:
     network = neatnet.induce_nodes(
         gpd.GeoDataFrame(pd.concat([edited, gaps], ignore_index=True), crs=edited.crs)
     )
+    network, restored = restore_links(network, out["removed"], was_main)
+    network = network.drop(columns="_cid")
+    network = network.explode(ignore_index=True)
+    network = network[network.geom_type == "LineString"].reset_index(drop=True)
+    network, extended = extend_dead_ends(network, cfg["extend_lines_m"])
     network.to_parquet(clean_dir / "mvi_arterial.parquet")
     out["axis_gaps"] = gaps
-    for name in ("removed", "axes", "connectors", "axis_gaps"):
+    out["restored"] = restored
+    out["extended"] = extended
+    for name in ("removed", "axes", "connectors", "axis_gaps", "restored", "extended"):
         out[name].to_parquet(clean_dir / f"arterial_{name}.parquet")
     conn = out["connectors"]
     return {
@@ -283,14 +354,18 @@ def run(root) -> dict[str, float]:
         "removed_km": out["removed"].length.sum() / 1e3,
         "connectors": len(conn),
         "axis_gaps": len(gaps),
+        "restored_lines": len(restored),
+        "restored_km": restored.length.sum() / 1e3,
+        "extended_lines": len(extended),
+        "extended_km": float(extended["added_m"].sum()) / 1e3,
         "connector_median_m": float(conn.length.median()) if len(conn) else 0.0,
         "connector_max_m": float(conn.length.max()) if len(conn) else 0.0,
         "lines_before": len(cleaned),
         "lines_after": len(network),
         "km_before": cleaned.length.sum() / 1e3,
         "km_after": network.length.sum() / 1e3,
-        "dead_ends_before": dead_end_count(neatnet.induce_nodes(cleaned)),
+        "dead_ends_before": dead_end_count(noded),
         "dead_ends_after": dead_end_count(network),
-        "pieces_before": int(label_pieces(neatnet.induce_nodes(cleaned)).nunique()),
+        "pieces_before": int(before.nunique()),
         "pieces_after": int(label_pieces(network).nunique()),
     }

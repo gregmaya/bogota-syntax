@@ -91,10 +91,17 @@ def arterials() -> None:
 
     s = run(project_root())
     typer.echo(f"  axes used: {s['axes_lines']:,} lines, {s['axes_km']:,.0f} km")
-    typer.echo(f"  removed: {s['removed_lines']:,} MVI lines, {s['removed_km']:,.0f} km")
+    typer.echo(
+        f"  removed: {s['removed_lines']:,} MVI lines, {s['removed_km']:,.0f} km; restored as "
+        f"the only link to the main network: {s['restored_lines']:,} ({s['restored_km']:.1f} km)"
+    )
     typer.echo(
         f"  connectors: {s['connectors']:,} (median {s['connector_median_m']:.1f} m, "
         f"max {s['connector_max_m']:.1f} m); axis gaps closed: {s['axis_gaps']:,}"
+    )
+    typer.echo(
+        f"  dead ends extended onto a nearby line: {s['extended_lines']:,} "
+        f"(+{s['extended_km'] * 1e3:,.0f} m in total)"
     )
     typer.echo(
         f"  network: {s['lines_before']:,} -> {s['lines_after']:,} lines, "
