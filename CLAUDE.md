@@ -30,9 +30,9 @@ Official datasets are found through the CKAN API (`https://datosabiertos.bogota.
 ```bash
 uv sync                       # create/refresh .venv from uv.lock
 uv run pre-commit install     # once per clone
-uv run bogota-syntax ingest              # all sources, in order; builds the extent after RENOBO
+uv run bogota-syntax ingest              # all sources, in order; builds the extent once its inputs are in
 uv run bogota-syntax ingest <source_id>  # one source; --force to download again
-uv run bogota-syntax extent              # pilot areas, live area, network extent (ADR-0004)
+uv run bogota-syntax extent              # ADR-0004 areas + stitch extent and cleaning areas (ADR-0007)
 uv run pytest
 uv run ruff check . && uv run ruff format .
 ```

@@ -54,4 +54,16 @@ pilot:
 # Effective width = max(buffer_min_m, max(distances)).
 buffer_min_m: 5000
 
+# One stitched network for the urban area plus a margin (ADR-0007). MVI inside the
+# Bogotá boundary, OSM outside it. Each analysis clips its network extent from it.
+stitch:
+  boundary_source: ideca_limite_bogota
+  urban_source: sdp_perimetro_urbano
+  # Stitch extent = urban perimeter buffered by this, united with the network extent.
+  # Must be at least the dead-buffer width, so the full city keeps its whole buffer.
+  stitch_margin_m: 10000
+  # Each side is cleaned this far past the boundary before the cut, so the seam is
+  # not at the edge of what neatnet sees.
+  clean_overlap_m: 500
+
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.

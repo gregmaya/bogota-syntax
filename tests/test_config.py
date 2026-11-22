@@ -6,7 +6,7 @@ from typer.testing import CliRunner
 
 from bogota_syntax.cli import app
 from bogota_syntax.config import load_analysis, load_sources
-from bogota_syntax.ingest import HANDLERS, ORDER
+from bogota_syntax.ingest import EXTENT_INPUTS, HANDLERS, ORDER
 from bogota_syntax.ingest.osm import highway_filter
 
 ALLOWED_LICENCES = {"CC-BY-4.0", "ODbL-1.0"}  # ADR-0002: anything else needs an ADR
@@ -21,6 +21,15 @@ def test_every_source_has_kind_and_licence() -> None:
 
 def test_ingest_order_covers_all_sources() -> None:
     assert sorted(ORDER) == sorted(load_sources())
+
+
+def test_extent_inputs_come_first_in_order() -> None:
+    # The CLI builds the extent right after the last of these is ingested.
+    assert ORDER[: len(EXTENT_INPUTS)] == EXTENT_INPUTS
+    a = load_analysis()
+    assert a["pilot"]["source"] in EXTENT_INPUTS
+    assert a["stitch"]["boundary_source"] in EXTENT_INPUTS
+    assert a["stitch"]["urban_source"] in EXTENT_INPUTS
 
 
 def test_pilot_selection_is_unique_gml_ids() -> None:

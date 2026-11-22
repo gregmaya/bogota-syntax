@@ -1,4 +1,7 @@
-"""Pilot areas, live area and network extent (ADR-0004). All in EPSG:9377, metres."""
+"""Pilot areas, live area and network extent (ADR-0004), and the stitch areas (ADR-0007).
+
+All in EPSG:9377, metres.
+"""
 
 from __future__ import annotations
 
@@ -59,4 +62,62 @@ def build(projects: gpd.GeoDataFrame, analysis: dict[str, Any]) -> dict[str, gpd
             {"margin_m": [pilot_cfg["live_margin_m"]]}, geometry=[live], crs=CRS
         ),
         "network_extent": gpd.GeoDataFrame({"buffer_m": [width]}, geometry=[net], crs=CRS),
+    }
+
+
+def stitch_areas(
+    boundary: BaseGeometry,
+    urban: BaseGeometry,
+    net_extent: BaseGeometry,
+    stitch_margin_m: float,
+    clean_overlap_m: float,
+    buffer_m: float,
+) -> dict[str, BaseGeometry]:
+    """Areas for the stitched network (ADR-0007), all EPSG:9377.
+
+    Inputs are the Bogotá boundary, the urban perimeter and the analysis network extent.
+    Returns:
+    - stitch_extent: urban perimeter + stitch_margin_m, united with the network extent;
+    - mvi_clean_area: stitch extent inside the boundary grown by clean_overlap_m;
+    - osm_clean_area: stitch extent outside the boundary shrunk by clean_overlap_m.
+
+    Raises ValueError if stitch_margin_m is below the dead-buffer width buffer_m, or if
+    clean_overlap_m is not positive.
+    """
+    if stitch_margin_m < buffer_m:
+        raise ValueError(
+            f"stitch_margin_m ({stitch_margin_m}) is below the dead buffer ({buffer_m}); "
+            "the full city would lose part of its buffer"
+        )
+    if clean_overlap_m <= 0:
+        raise ValueError("clean_overlap_m must be positive")
+    stitch = shapely.union(urban.buffer(stitch_margin_m), net_extent)
+    return {
+        "stitch_extent": stitch,
+        "mvi_clean_area": stitch.intersection(boundary.buffer(clean_overlap_m)),
+        "osm_clean_area": stitch.difference(boundary.buffer(-clean_overlap_m)),
+    }
+
+
+def build_stitch(
+    boundary: gpd.GeoDataFrame,
+    urban: gpd.GeoDataFrame,
+    net_extent: gpd.GeoDataFrame,
+    analysis: dict[str, Any],
+) -> dict[str, gpd.GeoDataFrame]:
+    """One-row GeoDataFrames for the stitch areas, from config/analysis.yaml settings."""
+    cfg = analysis["stitch"]
+    width = buffer_width(analysis["distances"], analysis["buffer_min_m"])
+    areas = stitch_areas(
+        shapely.union_all(boundary.to_crs(CRS).geometry.values),
+        shapely.union_all(urban.to_crs(CRS).geometry.values),
+        shapely.union_all(net_extent.to_crs(CRS).geometry.values),
+        cfg["stitch_margin_m"],
+        cfg["clean_overlap_m"],
+        width,
+    )
+    attrs = {"stitch_margin_m": cfg["stitch_margin_m"], "clean_overlap_m": cfg["clean_overlap_m"]}
+    return {
+        name: gpd.GeoDataFrame({k: [v] for k, v in attrs.items()}, geometry=[g], crs=CRS)
+        for name, g in areas.items()
     }

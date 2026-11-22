@@ -3,7 +3,8 @@
 Layout under data/ (git-ignored):
 - raw/<source_id>/       as received (EPSG:4326 for web services and OSM)
 - interim/<source_id>.parquet   reprojected to EPSG:9377, 2D
-- interim/extent/        pilot areas, live area, network extent (ADR-0004)
+- interim/extent/        pilot areas, live area, network extent (ADR-0004) and the
+                         stitch extent and cleaning areas (ADR-0007)
 """
 
 from __future__ import annotations
@@ -20,8 +21,15 @@ from bogota_syntax import provenance
 from bogota_syntax.config import CRS, CRS_WGS84, data_dir, load_analysis, load_sources
 from bogota_syntax.ingest import arcgis, osm
 
-# Sources that the network extent depends on come first.
-ORDER = ["renobo_proyectos", "ideca_limite_bogota", "ideca_malla_vial", "osm_vias"]
+# Sources that the extent depends on come first; the extent is built after the last one.
+ORDER = [
+    "renobo_proyectos",
+    "ideca_limite_bogota",
+    "sdp_perimetro_urbano",
+    "ideca_malla_vial",
+    "osm_vias",
+]
+EXTENT_INPUTS = ["renobo_proyectos", "ideca_limite_bogota", "sdp_perimetro_urbano"]
 
 
 def _rel(path: Path, root: Path) -> str:
@@ -118,12 +126,26 @@ def ingest_source(sid: str, root: Path, force: bool = False) -> dict[str, Any]:
 
 
 def build_extent(root: Path) -> dict[str, Path]:
-    """Write pilot areas, live area and network extent from the ingested RENOBO layer."""
+    """Write the ADR-0004 areas and the ADR-0007 stitch areas to data/interim/extent/.
+
+    Reads the ingested RENOBO layer, Bogotá boundary and urban perimeter (EPSG:9377).
+    """
     data = data_dir(root)
     analysis = load_analysis(root)
-    src_id = analysis["pilot"]["source"]
-    projects = gpd.read_parquet(data / "interim" / f"{src_id}.parquet")
-    layers = extent_mod.build(projects, analysis)
+
+    def interim(sid: str) -> gpd.GeoDataFrame:
+        path = data / "interim" / f"{sid}.parquet"
+        if not path.exists():
+            raise FileNotFoundError(f"extent needs {path}; run `bogota-syntax ingest {sid}`")
+        return gpd.read_parquet(path)
+
+    layers = extent_mod.build(interim(analysis["pilot"]["source"]), analysis)
+    layers |= extent_mod.build_stitch(
+        interim(analysis["stitch"]["boundary_source"]),
+        interim(analysis["stitch"]["urban_source"]),
+        layers["network_extent"],
+        analysis,
+    )
     out_dir = data / "interim" / "extent"
     out_dir.mkdir(parents=True, exist_ok=True)
     paths = {}

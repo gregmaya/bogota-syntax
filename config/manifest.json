@@ -68,5 +68,21 @@
     "raw_file": "data/raw/renobo_proyectos/proyecto_de_renobo.gpkg",
     "raw_sha256": "011275766a78e262058a1add2c86a9ba34e40a93043bdda62e5b11bc367c9a0e",
     "retrieved_at": "2026-11-21T21:28:21+00:00"
+  },
+  "sdp_perimetro_urbano": {
+    "ckan_dataset": "perimetro-urbano-bogota-d-c",
+    "ckan_license_id": "CC-BY-4.0",
+    "ckan_metadata_modified": "2026-08-11T19:02:39.535207",
+    "interim_file": "data/interim/sdp_perimetro_urbano.parquet",
+    "kind": "file",
+    "licence": "CC-BY-4.0",
+    "n_features": 6,
+    "query": {
+      "layer": "PerimetroUrbano",
+      "url": "https://datosabiertos.bogota.gov.co/dataset/12a704ee-e5bb-4c5d-bad6-a5069d12f90a/resource/bfc61e3c-fa58-4fe7-9581-7ead66c494cb/download/perimetrourbano.gpkg"
+    },
+    "raw_file": "data/raw/sdp_perimetro_urbano/perimetrourbano.gpkg",
+    "raw_sha256": "b295b6f55ba0760555b380e7f75a812c46f374d34433aa88b37b38bf69b460c2",
+    "retrieved_at": "2026-11-22T16:48:11+00:00"
   }
 }

@@ -34,9 +34,10 @@ def ingest(
 ) -> None:
     """Download sources, record provenance in config/manifest.json, reproject to EPSG:9377.
 
-    With no source, runs every source in order and builds the extent after RENOBO.
+    With no source, runs every source in order and builds the extent once its inputs
+    (RENOBO, Bogotá boundary, urban perimeter) are in.
     """
-    from bogota_syntax.ingest import ORDER, ingest_source
+    from bogota_syntax.ingest import EXTENT_INPUTS, ORDER, ingest_source
 
     root = project_root()
     known = load_sources(root)
@@ -46,14 +47,18 @@ def ingest(
         typer.echo(f"ingest {sid} ...")
         entry = ingest_source(sid, root, force=force)
         typer.echo(f"  {entry['n_features']} features -> {entry['interim_file']}")
-        if source is None and sid == "renobo_proyectos":
+        if source is None and sid == EXTENT_INPUTS[-1]:
             extent()
 
 
 @app.command()
 def extent() -> None:
-    """Build pilot areas, live area and network extent (ADR-0004) into data/interim/extent/."""
+    """Build the ADR-0004 areas and ADR-0007 stitch areas into data/interim/extent/."""
+    import geopandas as gpd
+
     from bogota_syntax.ingest import build_extent
 
-    for name, path in build_extent(project_root()).items():
-        typer.echo(f"  {name} -> {path.relative_to(project_root())}")
+    root = project_root()
+    for name, path in build_extent(root).items():
+        area_km2 = gpd.read_parquet(path).area.sum() / 1e6
+        typer.echo(f"  {name:<16} {area_km2:>9,.1f} km²  -> {path.relative_to(root)}")

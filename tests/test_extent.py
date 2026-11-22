@@ -69,3 +69,51 @@ def test_areas_are_nested() -> None:
         Point(X0 + 1100 + 9_000, Y0)
     )
     assert not net.contains(Point(X0 + 1100 + 11_000, Y0))
+
+
+# Stitch areas (ADR-0007): a 20 km "Bogotá" with a 6 km urban core near its west edge.
+BOGOTA = box(X0, Y0, X0 + 20_000, Y0 + 20_000)
+URBAN = box(X0 + 1_000, Y0 + 7_000, X0 + 7_000, Y0 + 13_000)
+
+
+def _stitch(margin: float = 10_000, overlap: float = 500, buffer_m: float = 5_000):
+    net = URBAN.buffer(2_000)
+    return extent.stitch_areas(BOGOTA, URBAN, net, margin, overlap, buffer_m)
+
+
+def test_stitch_extent_is_urban_plus_margin() -> None:
+    a = _stitch()
+    assert a["stitch_extent"].contains(Point(X0 + 1_000 - 9_900, Y0 + 10_000))
+    assert not a["stitch_extent"].contains(Point(X0 + 1_000 - 10_100, Y0 + 10_000))
+    # The far east of Bogotá is more than 10 km from the urban area: not in the extent.
+    assert not a["stitch_extent"].contains(Point(X0 + 19_000, Y0 + 10_000))
+
+
+def test_stitch_extent_always_covers_the_network_extent() -> None:
+    far = box(X0 + 30_000, Y0, X0 + 31_000, Y0 + 1_000)
+    a = extent.stitch_areas(BOGOTA, URBAN, far, 10_000, 500, 5_000)
+    assert a["stitch_extent"].contains(far)
+
+
+def test_cleaning_areas_overlap_by_twice_the_overlap_at_the_boundary() -> None:
+    a = _stitch()
+    mvi, osm = a["mvi_clean_area"], a["osm_clean_area"]
+    west_edge = X0
+    # 400 m either side of the west boundary: both sides are cleaned there.
+    for dx in (-400, 400):
+        p = Point(west_edge + dx, Y0 + 10_000)
+        assert mvi.contains(p) and osm.contains(p)
+    # 600 m outside: OSM only. 600 m inside: MVI only.
+    assert osm.contains(Point(west_edge - 600, Y0 + 10_000))
+    assert not mvi.contains(Point(west_edge - 600, Y0 + 10_000))
+    assert mvi.contains(Point(west_edge + 600, Y0 + 10_000))
+    assert not osm.contains(Point(west_edge + 600, Y0 + 10_000))
+    # Together they cover the whole stitch extent.
+    assert a["stitch_extent"].difference(mvi.union(osm)).area < 1
+
+
+def test_stitch_margin_below_dead_buffer_is_rejected() -> None:
+    with pytest.raises(ValueError, match="below the dead buffer"):
+        _stitch(margin=4_000, buffer_m=5_000)
+    with pytest.raises(ValueError, match="positive"):
+        _stitch(overlap=0)

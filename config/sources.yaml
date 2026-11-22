@@ -24,6 +24,18 @@ sources:
     where: "MUNCODIGO = '11001'"
     expected_count: 1
 
+  sdp_perimetro_urbano:
+    title: Perímetro urbano, POT Bogotá D.C. (Decreto 555 de 2021)
+    publisher: Secretaría Distrital de Planeación (SDP)
+    licence: CC-BY-4.0
+    ckan_dataset: perimetro-urbano-bogota-d-c
+    kind: file
+    url: https://datosabiertos.bogota.gov.co/dataset/12a704ee-e5bb-4c5d-bad6-a5069d12f90a/resource/bfc61e3c-fa58-4fe7-9581-7ead66c494cb/download/perimetrourbano.gpkg
+    layer: PerimetroUrbano
+    # Arrives in the local plane PCS_CarMAGBOG; reprojected to EPSG:9377 at ingest.
+    # Used for the stitch extent (ADR-0007). SDP's clasificacion-del-suelo would also
+    # give the urban area, but it is CC BY-NC 4.0, which ODbL outputs cannot use.
+
   ideca_malla_vial:
     title: Mapa de Referencia, Malla Vial (Malla Vial Integral)
     publisher: IDECA / UAECD
