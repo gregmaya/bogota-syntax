@@ -24,7 +24,7 @@ Las primeras etapas cubren una selección de proyectos de renovación urbana de 
 | --- | --- | --- | --- |
 | [Mapa de Referencia](https://datosabiertos.bogota.gov.co/dataset/mapa-de-referencia), capa *Malla Vial* | IDECA / UAECD | Red vial actual dentro de Bogotá; límite de la ciudad | CC BY 4.0 |
 | [Perímetro urbano](https://datosabiertos.bogota.gov.co/dataset/perimetro-urbano-bogota-d-c) | SDP | Área urbana, que define hasta dónde llega la red (área urbana + 10 km) | CC BY 4.0 |
-| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Vías arteriales proyectadas del POT, para escenarios futuros (no en la v1) | CC BY 4.0 |
+| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Geometría de las vías arteriales construidas dentro de Bogotá (ADR-0008); vías proyectadas para escenarios futuros | CC BY 4.0 |
 | [Red infraestructura vial](https://datosabiertos.bogota.gov.co/dataset/red-infraestructura-vial-bogota-d-c) | SDP | Corredores de reserva vial, como referencia | CC BY 4.0 |
 | [Proyecto de RenoBo](https://datosabiertos.bogota.gov.co/dataset/proyecto-de-renobo) | RENOBO | Áreas de estudio del piloto | CC BY 4.0 |
 | [OpenStreetMap](https://www.openstreetmap.org/copyright) | Colaboradores de OSM | Red vial por fuera de Bogotá | ODbL 1.0 |

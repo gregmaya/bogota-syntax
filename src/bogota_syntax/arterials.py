@@ -204,3 +204,59 @@ def guide(
     edited = gpd.GeoDataFrame(edited, geometry="geometry", crs=mvi.crs)
     edited = edited[~edited.geometry.is_empty & (edited.length > 0)].reset_index(drop=True)
     return {"removed": removed, "axes": ax, "connectors": conn, "edited": edited}
+
+
+def dead_end_count(lines: gpd.GeoDataFrame) -> int:
+    """Line ends that meet no other line end."""
+    keys = [_key(p) for p in _endpoints(lines.geometry.values).reshape(-1, 2)]
+    counts = pd.Series(keys).value_counts()
+    return int((counts == 1).sum())
+
+
+def run(root) -> dict[str, float]:
+    """Swap the SDP axes into cleaned MVI over the MVI cleaning area (ADR-0008).
+
+    Reads data/interim/clean/mvi_{raw,cleaned}.parquet and the ingested axes; writes
+    data/interim/clean/mvi_arterial.parquet (the network for the join) and the review
+    layers arterial_{removed,axes,connectors}.parquet. Returns a summary.
+    """
+    import neatnet
+
+    from bogota_syntax.config import CRS, data_dir, load_analysis
+
+    cfg = load_analysis(root)["arterials"]
+    interim = data_dir(root) / "interim"
+    clean_dir = interim / "clean"
+    raw = gpd.read_parquet(clean_dir / "mvi_raw.parquet")
+    cleaned = gpd.read_parquet(clean_dir / "mvi_cleaned.parquet")
+    area = shapely.union_all(
+        gpd.read_parquet(interim / "extent" / "mvi_clean_area.parquet").geometry.values
+    )
+    eje = gpd.read_parquet(interim / f"{cfg['source']}.parquet").to_crs(CRS).clip(area)
+    axes = select_axes(eje, raw, cfg["axis_match_m"], cfg["min_axis_on_mvi"])
+    cleaned = cleaned.explode(ignore_index=True)
+    cleaned = cleaned[cleaned.geom_type == "LineString"].reset_index(drop=True)
+    out = guide(cleaned, axes, cfg["corridor_m"], cfg["arterial_types"], cfg["ramp_zone_m"])
+    network = neatnet.induce_nodes(out["edited"])
+    network["source"] = network["source"].fillna("mvi")
+    network.to_parquet(clean_dir / "mvi_arterial.parquet")
+    for name in ("removed", "axes", "connectors"):
+        out[name].to_parquet(clean_dir / f"arterial_{name}.parquet")
+    conn = out["connectors"]
+    return {
+        "axes_lines": len(axes),
+        "axes_km": axes.length.sum() / 1e3,
+        "removed_lines": len(out["removed"]),
+        "removed_km": out["removed"].length.sum() / 1e3,
+        "connectors": len(conn),
+        "connector_median_m": float(conn.length.median()) if len(conn) else 0.0,
+        "connector_max_m": float(conn.length.max()) if len(conn) else 0.0,
+        "lines_before": len(cleaned),
+        "lines_after": len(network),
+        "km_before": cleaned.length.sum() / 1e3,
+        "km_after": network.length.sum() / 1e3,
+        "dead_ends_before": dead_end_count(neatnet.induce_nodes(cleaned)),
+        "dead_ends_after": dead_end_count(network),
+        "pieces_before": int(label_pieces(neatnet.induce_nodes(cleaned)).nunique()),
+        "pieces_after": int(label_pieces(network).nunique()),
+    }

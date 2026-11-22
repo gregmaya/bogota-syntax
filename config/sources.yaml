@@ -50,6 +50,17 @@ sources:
     # The REST service does not state which Mapa de Referencia version it serves; the
     # manifest records the CKAN dataset's metadata_modified date instead.
 
+  sdp_eje_vial:
+    title: Eje vial, POT Bogotá D.C. (Decreto 555 de 2021)
+    publisher: Secretaría Distrital de Planeación (SDP)
+    licence: CC-BY-4.0
+    ckan_dataset: eje-vial-bogota-d-c
+    kind: file
+    url: https://datosabiertos.bogota.gov.co/dataset/95cf10a5-3205-42d3-83c5-8a48abe59a9e/resource/af2aab89-e0b7-44f8-a31f-9abe5aac1589/download/eje_vial.gpkg
+    layer: Eje_vial
+    # Arterial axes of the POT. Built arterials (chosen by distance to MVI, not by
+    # ESTADO_VIA) replace the cleaned MVI arterials inside Bogotá (ADR-0008).
+
   osm_vias:
     title: OpenStreetMap streets
     publisher: OpenStreetMap contributors

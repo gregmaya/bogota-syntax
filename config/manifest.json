@@ -77,6 +77,22 @@
     "raw_sha256": "011275766a78e262058a1add2c86a9ba34e40a93043bdda62e5b11bc367c9a0e",
     "retrieved_at": "2026-11-21T21:28:21+00:00"
   },
+  "sdp_eje_vial": {
+    "ckan_dataset": "eje-vial-bogota-d-c",
+    "ckan_license_id": "CC-BY-4.0",
+    "ckan_metadata_modified": "2022-11-16T18:19:40.866423",
+    "interim_file": "data/interim/sdp_eje_vial.parquet",
+    "kind": "file",
+    "licence": "CC-BY-4.0",
+    "n_features": 1149,
+    "query": {
+      "layer": "Eje_vial",
+      "url": "https://datosabiertos.bogota.gov.co/dataset/95cf10a5-3205-42d3-83c5-8a48abe59a9e/resource/af2aab89-e0b7-44f8-a31f-9abe5aac1589/download/eje_vial.gpkg"
+    },
+    "raw_file": "data/raw/sdp_eje_vial/eje_vial.gpkg",
+    "raw_sha256": "bef518e23b57f0a6bc77f205ee9608262db39f76b3a4d38597599dcb546c55f9",
+    "retrieved_at": "2026-11-22T21:06:11+00:00"
+  },
   "sdp_perimetro_urbano": {
     "ckan_dataset": "perimetro-urbano-bogota-d-c",
     "ckan_license_id": "CC-BY-4.0",

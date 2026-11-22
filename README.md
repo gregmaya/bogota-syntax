@@ -24,7 +24,7 @@ The first stages cover a selection of RENOBO urban renewal projects in central B
 | --- | --- | --- | --- |
 | [Mapa de Referencia](https://datosabiertos.bogota.gov.co/dataset/mapa-de-referencia), layer *Malla Vial* | IDECA / UAECD | Current street network inside Bogotá; city boundary | CC BY 4.0 |
 | [Perímetro urbano](https://datosabiertos.bogota.gov.co/dataset/perimetro-urbano-bogota-d-c) | SDP | Urban area, which sets how far the network reaches (urban area + 10 km) | CC BY 4.0 |
-| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Projected POT arterial roads, for later scenarios (not in v1) | CC BY 4.0 |
+| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Geometry of built arterials inside Bogotá (ADR-0008); projected roads for later scenarios | CC BY 4.0 |
 | [Red infraestructura vial](https://datosabiertos.bogota.gov.co/dataset/red-infraestructura-vial-bogota-d-c) | SDP | Road reserve corridors, for reference | CC BY 4.0 |
 | [Proyecto de RenoBo](https://datosabiertos.bogota.gov.co/dataset/proyecto-de-renobo) | RENOBO | Pilot study areas | CC BY 4.0 |
 | [OpenStreetMap](https://www.openstreetmap.org/copyright) | OSM contributors | Street network outside Bogotá | ODbL 1.0 |

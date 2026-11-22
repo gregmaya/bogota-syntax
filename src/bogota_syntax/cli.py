@@ -82,3 +82,25 @@ def clean(
             f"{s['cleaned_lines']:,} lines {s['cleaned_km']:,.0f} km; pieces "
             f"{s['pieces_before']} -> {s['pieces_after']}, vanished {s['pieces_vanished']}"
         )
+
+
+@app.command()
+def arterials() -> None:
+    """Swap SDP arterial axes into cleaned MVI (ADR-0008) -> data/interim/clean/mvi_arterial."""
+    from bogota_syntax.arterials import run
+
+    s = run(project_root())
+    typer.echo(f"  axes used: {s['axes_lines']:,} lines, {s['axes_km']:,.0f} km")
+    typer.echo(f"  removed: {s['removed_lines']:,} MVI lines, {s['removed_km']:,.0f} km")
+    typer.echo(
+        f"  connectors: {s['connectors']:,} (median {s['connector_median_m']:.1f} m, "
+        f"max {s['connector_max_m']:.1f} m)"
+    )
+    typer.echo(
+        f"  network: {s['lines_before']:,} -> {s['lines_after']:,} lines, "
+        f"{s['km_before']:,.0f} -> {s['km_after']:,.0f} km"
+    )
+    typer.echo(
+        f"  dead ends {s['dead_ends_before']:,} -> {s['dead_ends_after']:,}; "
+        f"pieces {s['pieces_before']} -> {s['pieces_after']}"
+    )

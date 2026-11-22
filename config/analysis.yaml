@@ -82,4 +82,20 @@ clean:
   min_piece_m: 100
   min_kept_ratio: 0.5
 
+# SDP arterial axes replace cleaned MVI arterials inside Bogotá (ADR-0008).
+# Values from the interchange test, scripts/adr0008_interchanges.py.
+arterials:
+  source: sdp_eje_vial
+  # An axis line is used if min_axis_on_mvi of its length lies within axis_match_m of
+  # raw MVI: built arterials, chosen by geometry rather than ESTADO_VIA.
+  axis_match_m: 25
+  min_axis_on_mvi: 0.9
+  # Cleaned MVI lines of these types (or untyped) with half their length within
+  # corridor_m of an axis are removed; so are leftover pieces wholly within ramp_zone_m
+  # that only touched removed lines. Service roads go with the arterial (accepted
+  # 2026-11-22).
+  arterial_types: [AC, AK]
+  corridor_m: 60
+  ramp_zone_m: 150
+
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.
