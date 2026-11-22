@@ -9,6 +9,7 @@ Layout under data/ (git-ignored):
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -85,17 +86,20 @@ def _ingest_osm(sid: str, src: dict, data: Path, force: bool, s: requests.Sessio
         raise FileNotFoundError(f"{sid} needs {ext_path}; run `bogota-syntax extent` first")
     polygon = gpd.read_parquet(ext_path).to_crs(CRS_WGS84).geometry.iloc[0]
     raw = data / "raw" / sid / f"{sid}.parquet"
-    if force or not raw.exists():
-        gdf = osm.fetch_streets(polygon, src["highway"], data / "raw" / sid / "cache")
+    meta_path = raw.with_name("overpass.json")
+    if force or not raw.exists() or not meta_path.exists():
+        gdf, meta = osm.fetch_streets(polygon, src["highway"], data / "raw" / sid / "cache")
         raw.parent.mkdir(parents=True, exist_ok=True)
         gdf.to_parquet(raw)
+        meta_path.write_text(json.dumps(meta, indent=2) + "\n")
     gdf = gpd.read_parquet(raw)
     query = {
         "overpass": "osmnx.graph_from_polygon",
         "filter": osm.highway_filter(src["highway"]),
         "extent": src["extent"],
+        "extent_area_km2": round(gpd.read_parquet(ext_path).area.sum() / 1e6, 1),
         "extent_bounds_wgs84": [round(v, 6) for v in polygon.bounds],
-    }
+    } | json.loads(meta_path.read_text())
     return raw, gdf, query
 
 

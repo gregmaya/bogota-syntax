@@ -55,9 +55,10 @@ sources:
     publisher: OpenStreetMap contributors
     licence: ODbL-1.0
     kind: osm_overpass
-    # Fetched over the whole network extent, inside Bogotá too, so the OSM-only
-    # fallback (ADR-0003) needs no second download. The join keeps OSM outside Bogotá only.
-    extent: network_extent
+    # Fetched over the OSM cleaning area only: the stitch extent outside Bogotá plus a
+    # 500 m overlap inside it (ADR-0007). Always the latest data, no date filter; the
+    # manifest records when the query ran and the OSM timestamp Overpass reported.
+    extent: osm_clean_area
     # Vehicular streets, to match what MVI draws (ADR-0005). No footways, paths,
     # tracks or service roads.
     highway:

@@ -49,3 +49,20 @@ def test_cli_help() -> None:
     r = CliRunner().invoke(app, ["--help"])
     assert r.exit_code == 0
     assert "ingest" in r.output and "extent" in r.output
+
+
+def test_overpass_timestamps_read_from_cache(tmp_path) -> None:
+    from bogota_syntax.ingest.osm import overpass_timestamps
+
+    for i, ts in enumerate(
+        ["2026-11-22T10:00:00Z", "2026-11-22T09:59:00Z", "2026-11-22T10:00:00Z"]
+    ):
+        (tmp_path / f"{i}.json").write_text(
+            f'{{"osm3s": {{"timestamp_osm_base": "{ts}"}}, "elements": []}}'
+        )
+    (tmp_path / "other.json").write_text("[]")
+    assert overpass_timestamps(tmp_path) == ["2026-11-22T09:59:00Z", "2026-11-22T10:00:00Z"]
+
+
+def test_osm_is_fetched_over_the_osm_cleaning_area() -> None:
+    assert load_sources()["osm_vias"]["extent"] == "osm_clean_area"

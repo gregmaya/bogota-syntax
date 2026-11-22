@@ -37,21 +37,29 @@
     "interim_file": "data/interim/osm_vias.parquet",
     "kind": "osm_overpass",
     "licence": "ODbL-1.0",
-    "n_features": 245196,
+    "n_features": 91863,
     "query": {
-      "extent": "network_extent",
+      "extent": "osm_clean_area",
+      "extent_area_km2": 1113.4,
       "extent_bounds_wgs84": [
-        -74.258247,
-        4.497008,
-        -73.962984,
-        4.815636
+        -74.31368,
+        4.37913,
+        -73.921869,
+        4.921139
       ],
       "filter": "[\"highway\"~\"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified|residential|living_street)$\"]",
-      "overpass": "osmnx.graph_from_polygon"
+      "n_overpass_responses": 1,
+      "osm_timestamp_max": "2026-11-22T19:09:52Z",
+      "osm_timestamp_min": "2026-11-22T19:09:52Z",
+      "osmnx_version": "2.2.0",
+      "overpass": "osmnx.graph_from_polygon",
+      "overpass_url": "https://overpass-api.de/api",
+      "query_finished_at": "2026-11-22T19:11:36+00:00",
+      "query_started_at": "2026-11-22T19:08:33+00:00"
     },
     "raw_file": "data/raw/osm_vias/osm_vias.parquet",
-    "raw_sha256": "ccf6d4241da7e5925764020813b6669310009b2d54083fd7f5a7d160993fac57",
-    "retrieved_at": "2026-11-21T21:30:44+00:00"
+    "raw_sha256": "d079f7f447802dcfa802a37594102c4987d19642d44e4899971c84726b34679a",
+    "retrieved_at": "2026-11-22T19:11:36+00:00"
   },
   "renobo_proyectos": {
     "ckan_dataset": "proyecto-de-renobo",
