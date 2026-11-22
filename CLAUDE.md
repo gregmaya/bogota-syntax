@@ -30,11 +30,22 @@ Official datasets are found through the CKAN API (`https://datosabiertos.bogota.
 ```bash
 uv sync                       # create/refresh .venv from uv.lock
 uv run pre-commit install     # once per clone
+uv run bogota-syntax ingest              # all sources, in order; builds the extent after RENOBO
+uv run bogota-syntax ingest <source_id>  # one source; --force to download again
+uv run bogota-syntax extent              # pilot areas, live area, network extent (ADR-0004)
 uv run pytest
 uv run ruff check . && uv run ruff format .
 ```
 
 Update this block when the real commands differ.
+
+## Repository layout
+
+- `config/sources.yaml`: every dataset with URL or service, licence and kind. A new source is added here first.
+- `config/analysis.yaml`: distances, pilot selection (RENOBO by `GmlID`), margins. No magic numbers in code.
+- `config/manifest.json`: written by ingest and committed. Query, date, feature count, SHA-256, CKAN modification date.
+- `src/bogota_syntax/`: `ingest/` (CKAN files, ArcGIS REST, OSM via osmnx), `extent.py`, `cli.py`.
+- `data/raw/<source>/` as received (EPSG:4326); `data/interim/<source>.parquet` in EPSG:9377; `data/interim/extent/`.
 
 ## Hard rules
 

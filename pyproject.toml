@@ -11,9 +11,20 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: GIS",
 ]
-# Runtime dependencies are added with `uv add` once the network source and
-# analysis library are decided (see docs/decisions/).
-dependencies = []
+dependencies = [
+    "geopandas>=1.0",
+    "osmnx>=2.0",
+    "pyarrow>=18",
+    "pyogrio>=0.10",
+    "pyproj>=3.7",
+    "pyyaml>=6.0",
+    "requests>=2.32",
+    "shapely>=2.0",
+    "typer>=0.15",
+]
+
+[project.scripts]
+bogota-syntax = "bogota_syntax.cli:app"
 
 [project.urls]
 Repository = "https://github.com/gregmaya/bogota-syntax"

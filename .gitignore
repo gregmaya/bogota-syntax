@@ -36,6 +36,10 @@ data/*
 # OSMnx HTTP cache
 cache/
 
+# Working files ingest writes next to config/manifest.json (the manifest itself IS committed)
+config/manifest.json.tmp
+*.part
+
 # Small, committed test fixtures are the exception.
 !tests/fixtures/**
 

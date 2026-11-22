@@ -7,7 +7,46 @@ distances: [400, 800, 1200, 1600, 2000, 5000]
 pilot:
   # The pilot areas are drawn in the viewer as dotted outlines. They are not a
   # computation boundary.
-  areas: data/renobo_selection.gpkg
+  # Selected from source renobo_proyectos by GmlID (project IDs are not unique).
+  # This is the selection Gregorio made in data/renobo_selection.gpkg on 2026-11-21.
+  source: renobo_proyectos
+  gml_ids:
+    - Proyecto_de_RenoBo.76
+    - Proyecto_de_RenoBo.81
+    - Proyecto_de_RenoBo.82
+    - Proyecto_de_RenoBo.83
+    - Proyecto_de_RenoBo.84
+    - Proyecto_de_RenoBo.86
+    - Proyecto_de_RenoBo.87
+    - Proyecto_de_RenoBo.91
+    - Proyecto_de_RenoBo.94
+    - Proyecto_de_RenoBo.97
+    - Proyecto_de_RenoBo.99
+    - Proyecto_de_RenoBo.102
+    - Proyecto_de_RenoBo.103
+    - Proyecto_de_RenoBo.104
+    - Proyecto_de_RenoBo.105
+    - Proyecto_de_RenoBo.108
+    - Proyecto_de_RenoBo.109
+    - Proyecto_de_RenoBo.110
+    - Proyecto_de_RenoBo.111
+    - Proyecto_de_RenoBo.112
+    - Proyecto_de_RenoBo.113
+    - Proyecto_de_RenoBo.114
+    - Proyecto_de_RenoBo.118
+    - Proyecto_de_RenoBo.119
+    - Proyecto_de_RenoBo.120
+    - Proyecto_de_RenoBo.121
+    - Proyecto_de_RenoBo.122
+    - Proyecto_de_RenoBo.126
+    - Proyecto_de_RenoBo.127
+    - Proyecto_de_RenoBo.128
+    - Proyecto_de_RenoBo.129
+    - Proyecto_de_RenoBo.130
+    - Proyecto_de_RenoBo.135
+    - Proyecto_de_RenoBo.136
+    - Proyecto_de_RenoBo.147
+    - Proyecto_de_RenoBo.150
   # Live area = pilot areas buffered by this margin. Results are reported here.
   live_margin_m: 5000
 

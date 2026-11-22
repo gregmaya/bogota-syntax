@@ -46,5 +46,7 @@ jobs:
           enable-cache: true
       - name: Install environment from uv.lock
         run: uv sync --locked
+      - name: CLI entry point
+        run: uv run bogota-syntax --help
       - name: Tests
         run: uv run pytest

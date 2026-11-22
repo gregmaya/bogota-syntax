@@ -1,0 +1,72 @@
+{
+  "ideca_limite_bogota": {
+    "ckan_dataset": "mapa-de-referencia",
+    "ckan_license_id": "CC-BY-4.0",
+    "ckan_metadata_modified": "2026-08-28T18:19:09.548990",
+    "interim_file": "data/interim/ideca_limite_bogota.parquet",
+    "kind": "arcgis_layer",
+    "licence": "CC-BY-4.0",
+    "n_features": 1,
+    "query": {
+      "layer_id": 47,
+      "service": "https://serviciosgis.catastrobogota.gov.co/arcgis/rest/services/Mapa_Referencia/Mapa_Referencia/MapServer",
+      "where": "MUNCODIGO = '11001'"
+    },
+    "raw_file": "data/raw/ideca_limite_bogota/ideca_limite_bogota.parquet",
+    "raw_sha256": "8cf2464917ffce17992ec40461046afa3e3174766ff7cc86aa12cbf1b6cbd4ab",
+    "retrieved_at": "2026-11-21T21:28:28+00:00"
+  },
+  "ideca_malla_vial": {
+    "ckan_dataset": "mapa-de-referencia",
+    "ckan_license_id": "CC-BY-4.0",
+    "ckan_metadata_modified": "2026-08-28T18:19:09.548990",
+    "interim_file": "data/interim/ideca_malla_vial.parquet",
+    "kind": "arcgis_layer",
+    "licence": "CC-BY-4.0",
+    "n_features": 139106,
+    "query": {
+      "layer_id": 13,
+      "service": "https://serviciosgis.catastrobogota.gov.co/arcgis/rest/services/Mapa_Referencia/Mapa_Referencia/MapServer",
+      "where": "1=1"
+    },
+    "raw_file": "data/raw/ideca_malla_vial/ideca_malla_vial.parquet",
+    "raw_sha256": "6b84a83bdf305c2602b509c396d96ef8e318c52c031945501e9961ee2bdac93a",
+    "retrieved_at": "2026-11-21T21:29:48+00:00"
+  },
+  "osm_vias": {
+    "interim_file": "data/interim/osm_vias.parquet",
+    "kind": "osm_overpass",
+    "licence": "ODbL-1.0",
+    "n_features": 245196,
+    "query": {
+      "extent": "network_extent",
+      "extent_bounds_wgs84": [
+        -74.258247,
+        4.497008,
+        -73.962984,
+        4.815636
+      ],
+      "filter": "[\"highway\"~\"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified|residential|living_street)$\"]",
+      "overpass": "osmnx.graph_from_polygon"
+    },
+    "raw_file": "data/raw/osm_vias/osm_vias.parquet",
+    "raw_sha256": "ccf6d4241da7e5925764020813b6669310009b2d54083fd7f5a7d160993fac57",
+    "retrieved_at": "2026-11-21T21:30:44+00:00"
+  },
+  "renobo_proyectos": {
+    "ckan_dataset": "proyecto-de-renobo",
+    "ckan_license_id": "CC-BY-4.0",
+    "ckan_metadata_modified": "2026-08-03T12:35:24.117902",
+    "interim_file": "data/interim/renobo_proyectos.parquet",
+    "kind": "file",
+    "licence": "CC-BY-4.0",
+    "n_features": 76,
+    "query": {
+      "layer": "temp_wfs_layer",
+      "url": "https://datosabiertos.bogota.gov.co/dataset/79a5cbd6-c2e9-4cff-8056-acf55158b8a3/resource/36337a19-f13a-4955-aefb-7f8e90c13861/download/proyecto_de_renobo.gpkg"
+    },
+    "raw_file": "data/raw/renobo_proyectos/proyecto_de_renobo.gpkg",
+    "raw_sha256": "011275766a78e262058a1add2c86a9ba34e40a93043bdda62e5b11bc367c9a0e",
+    "retrieved_at": "2026-11-21T21:28:21+00:00"
+  }
+}

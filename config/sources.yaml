@@ -1,0 +1,64 @@
+# Every dataset the pipeline reads. A new source is added here first.
+# Licences were checked through the CKAN API of datosabiertos.bogota.gov.co on 2026-11-21.
+# Downloads are recorded in config/manifest.json (URL, query, date, feature count, SHA-256).
+
+sources:
+  renobo_proyectos:
+    title: Proyecto de RenoBo
+    publisher: Empresa de Renovación y Desarrollo Urbano de Bogotá (RENOBO)
+    licence: CC-BY-4.0
+    ckan_dataset: proyecto-de-renobo
+    kind: file
+    url: https://datosabiertos.bogota.gov.co/dataset/79a5cbd6-c2e9-4cff-8056-acf55158b8a3/resource/36337a19-f13a-4955-aefb-7f8e90c13861/download/proyecto_de_renobo.gpkg
+    layer: temp_wfs_layer
+    # Project IDs are not unique in this layer (several polygons share one); GmlID is.
+
+  ideca_limite_bogota:
+    title: Mapa de Referencia, Municipio (Bogotá D.C.)
+    publisher: IDECA / UAECD
+    licence: CC-BY-4.0
+    ckan_dataset: mapa-de-referencia
+    kind: arcgis_layer
+    service: https://serviciosgis.catastrobogota.gov.co/arcgis/rest/services/Mapa_Referencia/Mapa_Referencia/MapServer
+    layer_id: 47
+    where: "MUNCODIGO = '11001'"
+    expected_count: 1
+
+  ideca_malla_vial:
+    title: Mapa de Referencia, Malla Vial (Malla Vial Integral)
+    publisher: IDECA / UAECD
+    licence: CC-BY-4.0
+    ckan_dataset: mapa-de-referencia
+    kind: arcgis_layer
+    service: https://serviciosgis.catastrobogota.gov.co/arcgis/rest/services/Mapa_Referencia/Mapa_Referencia/MapServer
+    layer_id: 13
+    where: "1=1"
+    # The whole layer is fetched (not clipped to the pilot): the pilot's network extent
+    # already covers ~97% of it, and the full city will need all of it.
+    # The REST service does not state which Mapa de Referencia version it serves; the
+    # manifest records the CKAN dataset's metadata_modified date instead.
+
+  osm_vias:
+    title: OpenStreetMap streets
+    publisher: OpenStreetMap contributors
+    licence: ODbL-1.0
+    kind: osm_overpass
+    # Fetched over the whole network extent, inside Bogotá too, so the OSM-only
+    # fallback (ADR-0003) needs no second download. The join keeps OSM outside Bogotá only.
+    extent: network_extent
+    # Vehicular streets, to match what MVI draws (ADR-0005). No footways, paths,
+    # tracks or service roads.
+    highway:
+      - motorway
+      - motorway_link
+      - trunk
+      - trunk_link
+      - primary
+      - primary_link
+      - secondary
+      - secondary_link
+      - tertiary
+      - tertiary_link
+      - unclassified
+      - residential
+      - living_street
