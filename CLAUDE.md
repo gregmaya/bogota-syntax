@@ -33,6 +33,7 @@ uv run pre-commit install     # once per clone
 uv run bogota-syntax ingest              # all sources, in order; builds the extent once its inputs are in
 uv run bogota-syntax ingest <source_id>  # one source; --force to download again
 uv run bogota-syntax extent              # ADR-0004 areas + stitch extent and cleaning areas (ADR-0007)
+uv run bogota-syntax clean [mvi|osm]     # neatnet per side, with piece checks (~10 min for both)
 uv run pytest
 uv run ruff check . && uv run ruff format .
 ```
@@ -44,7 +45,7 @@ Update this block when the real commands differ.
 - `config/sources.yaml`: every dataset with URL or service, licence and kind. A new source is added here first.
 - `config/analysis.yaml`: distances, pilot selection (RENOBO by `GmlID`), margins. No magic numbers in code.
 - `config/manifest.json`: written by ingest and committed. Query, date, feature count, SHA-256, CKAN modification date.
-- `src/bogota_syntax/`: `ingest/` (CKAN files, ArcGIS REST, OSM via osmnx), `extent.py`, `cli.py`.
+- `src/bogota_syntax/`: `ingest/` (CKAN files, ArcGIS REST, OSM via osmnx), `extent.py`, `clean.py`, `cli.py`.
 - `data/raw/<source>/` as received (EPSG:4326); `data/interim/<source>.parquet` in EPSG:9377; `data/interim/extent/`.
 
 ## Hard rules

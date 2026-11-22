@@ -13,6 +13,7 @@ classifiers = [
 ]
 dependencies = [
     "geopandas>=1.0",
+    "neatnet>=0.1.6",
     "osmnx>=2.0",
     "pyarrow>=18",
     "pyogrio>=0.10",

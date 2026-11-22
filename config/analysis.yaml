@@ -66,4 +66,20 @@ stitch:
   # not at the edge of what neatnet sees.
   clean_overlap_m: 500
 
+# Cleaning each side with neatnet before the join (ADR-0005, ADR-0007).
+clean:
+  # Arguments passed to neatnet.neatify; empty means neatnet's defaults.
+  neatify: {}
+  # A raw line counts as kept if a cleaned line lies within match_m of it. neatnet
+  # merges the two carriageways of a divided road into one line between them, so this
+  # must cover half the widest median: at 25 m, 81.7 km of avenues (AC/AK) did not match;
+  # at 50 m, 8.9 km (first run, 2026-11-22).
+  match_m: 50
+  # Spacing of the points sampled along each raw line for that test.
+  sample_step_m: 10
+  # The join stops if a piece at least min_piece_m long keeps less than min_kept_ratio
+  # of its length. Shorter pieces that vanish are listed in the review layer only.
+  min_piece_m: 100
+  min_kept_ratio: 0.5
+
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.

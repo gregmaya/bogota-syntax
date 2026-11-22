@@ -62,3 +62,23 @@ def extent() -> None:
     for name, path in build_extent(root).items():
         area_km2 = gpd.read_parquet(path).area.sum() / 1e6
         typer.echo(f"  {name:<16} {area_km2:>9,.1f} km²  -> {path.relative_to(root)}")
+
+
+@app.command()
+def clean(
+    side: Annotated[str | None, typer.Argument(help="mvi or osm; both if omitted.")] = None,
+) -> None:
+    """Clean each side with neatnet over its cleaning area (ADR-0007) into data/interim/clean/.
+
+    Stops with an error if a piece of the network is lost in cleaning.
+    """
+    from bogota_syntax.clean import SIDES, run
+
+    if side is not None and side not in SIDES:
+        raise typer.BadParameter(f"unknown side {side!r}; known: {', '.join(SIDES)}")
+    for name, s in run(project_root(), [side] if side else None).items():
+        typer.echo(
+            f"  {name}: {s['raw_lines']:,} lines {s['raw_km']:,.0f} km -> "
+            f"{s['cleaned_lines']:,} lines {s['cleaned_km']:,.0f} km; pieces "
+            f"{s['pieces_before']} -> {s['pieces_after']}, vanished {s['pieces_vanished']}"
+        )
