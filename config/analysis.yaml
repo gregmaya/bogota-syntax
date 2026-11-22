@@ -117,4 +117,15 @@ join:
   # Candidates up to this length are written for review, accepted or not.
   candidate_max_m: 100
 
+# Finishing the stitched network into intersection-to-intersection segments (ADR-0009).
+network:
+  # mvi_only (v1, ADR-0010): cleaned MVI inside Bogotá, nothing else.
+  # stitched (ADR-0007/0008, shelved): MVI + SDP axes + OSM from `bogota-syntax join`.
+  mode: mvi_only
+  # mvi_only: dead ends are extended straight ahead onto a line within this distance.
+  extend_lines_m: 10
+  # Lines neatnet drew (no source id) take the attributes of the raw line with the most
+  # length within this distance.
+  recover_m: 15
+
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.

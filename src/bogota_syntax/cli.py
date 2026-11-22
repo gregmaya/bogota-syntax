@@ -86,7 +86,7 @@ def clean(
 
 @app.command()
 def arterials() -> None:
-    """Swap SDP arterial axes into cleaned MVI (ADR-0008) -> data/interim/clean/mvi_arterial."""
+    """Shelved, not used in v1 (ADR-0010). Swap SDP axes into cleaned MVI (ADR-0008)."""
     from bogota_syntax.arterials import run
 
     s = run(project_root())
@@ -115,7 +115,7 @@ def arterials() -> None:
 
 @app.command()
 def join() -> None:
-    """Cut both sides at the Bogotá boundary and connect them (ADR-0007) -> data/interim/join/."""
+    """Shelved, not used in v1 (ADR-0010). Join OSM and MVI at the boundary (ADR-0007)."""
     from bogota_syntax.join import run
 
     s = run(project_root())
@@ -128,3 +128,23 @@ def join() -> None:
     typer.echo(
         f"  pieces: {s['pieces']} (main {s['main_km']:,.0f} km, others {s['other_km']:,.1f} km)"
     )
+
+
+@app.command()
+def network() -> None:
+    """Merge into intersection-to-intersection segments (ADR-0009) -> data/processed/network."""
+    from bogota_syntax.network import run
+
+    s = run(project_root())
+    typer.echo(f"  mode: {s['mode']}")
+    typer.echo(
+        f"  {s['segments']:,} segments, {s['km']:,.0f} km, median {s['median_m']:.0f} m; "
+        f"nodes {s['nodes']:,} (degree 2: {s['degree2_nodes']}); loops {s['loops']}"
+    )
+    typer.echo(f"  pieces {s['pieces']}, main network {s['main_km']:,.0f} km")
+    for src, r in s["by_source"].iterrows():
+        typer.echo(f"    {src:<16} {int(r['n']):>7,} segments {r['km']:>8,.1f} km")
+    typer.echo("  attributes by source and origin:")
+    for (src, origin), n in s["attr_origin"].items():
+        typer.echo(f"    {src:<16} {origin:<10} {n:>7,}")
+    typer.echo(f"  -> {s['path'].relative_to(project_root())}")
