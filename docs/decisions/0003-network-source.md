@@ -1,6 +1,6 @@
 # ADR-0003: Network source: official data inside Bogotá, OSM outside, OSM-only fallback
 
-- **Status:** Accepted. The OSM-only fallback (Decision, point 3) is superseded by ADR-0007. Point 4 (no `eje-vial` in v1) is superseded for built arterials by ADR-0008.
+- **Status:** Accepted. The OSM-only fallback (Decision, point 3) is superseded by ADR-0007. Point 4 (no `eje-vial` in v1) is superseded for built arterials by ADR-0008. For v1, ADR-0010 replaces the sources with MVI only.
 - **Date:** 2026-11-21
 
 ## Context

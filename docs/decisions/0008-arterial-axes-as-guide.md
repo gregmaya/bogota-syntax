@@ -1,6 +1,6 @@
 # ADR-0008: SDP arterial axes as the geometry of built arterials inside Bogotá
 
-- **Status:** Accepted
+- **Status:** Accepted; superseded for v1 by ADR-0010 (shelved, code kept)
 - **Date:** 2026-11-22
 
 ## Context

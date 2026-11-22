@@ -12,7 +12,9 @@ ADRs are immutable once accepted. To change a decision, write a new ADR that sup
 | [0004](0004-study-extent.md) | Study extent, buffer and live nodes | Accepted | 2026-11-21 |
 | [0005](0005-cleaning-and-analysis.md) | Cleaning with neatnet, analysis with cityseer | Accepted | 2026-11-21 |
 | [0006](0006-crs-and-formats.md) | CRS and file formats, same as bogota-pop | Accepted | 2026-11-21 |
-| [0007](0007-stitching-mvi-and-osm.md) | One stitched network: MVI for Bogotá, OSM for 10 km around the urban area | Accepted | 2026-11-22 |
-| [0008](0008-arterial-axes-as-guide.md) | SDP arterial axes as the geometry of built arterials inside Bogotá | Accepted | 2026-11-22 |
+| [0007](0007-stitching-mvi-and-osm.md) | One stitched network: MVI for Bogotá, OSM for 10 km around the urban area | Accepted; shelved for v1 by 0010 | 2026-11-22 |
+| [0008](0008-arterial-axes-as-guide.md) | SDP arterial axes as the geometry of built arterials inside Bogotá | Accepted; shelved for v1 by 0010 | 2026-11-22 |
+| [0009](0009-analysis-graph-and-measures.md) | Segment (dual) graph, simplest-path closeness and betweenness | Accepted | 2026-11-22 |
+| [0010](0010-v1-mvi-only.md) | v1 network is MVI only; the stitched network is shelved | Accepted | 2026-11-22 |
 
 New ADRs copy [template.md](template.md) and take the next number.

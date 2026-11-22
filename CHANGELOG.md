@@ -19,3 +19,6 @@ All notable changes to this project are recorded here. Each release covers data,
 - `bogota-syntax arterials` closes gaps where SDP axes stop short of each other (`axis_snap_m`).
 - `bogota-syntax join`: MVI inside and OSM outside Bogotá, cut at the boundary and joined by connectors; review layers in `data/interim/join/` (ADR-0007).
 - `bogota-syntax arterials` restores removed lines that were the only link to the main network, and extends MVI dead ends onto a line within 10 m (`neatnet.extend_lines`).
+- ADR-0009: dual (segment) graph, simplest-path closeness and betweenness at six distances, undirected, unweighted, islands kept.
+- `bogota-syntax network`: segments from intersection to intersection with stable `segment_id`, `piece`/`in_main`, recovered source attributes; `data/processed/network.parquet`.
+- ADR-0010: v1 network is MVI only. `bogota-syntax network` builds it by default (`network.mode: mvi_only`) with `boundary_dist_m` per segment; the stitched pipeline (ADR-0007, ADR-0008) is shelved, its lessons recorded in the ADR.

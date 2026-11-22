@@ -1,6 +1,6 @@
 # ADR-0007: One stitched network: MVI for Bogotá, OSM for 10 km around the urban area
 
-- **Status:** Accepted
+- **Status:** Accepted; superseded for v1 by ADR-0010 (shelved, code kept)
 - **Date:** 2026-11-22
 
 ## Context

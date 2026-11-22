@@ -12,9 +12,9 @@ Este repositorio construye una red vial de Bogotá, calcula medidas de centralid
 
 El método en breve:
 
-1. Unir los ejes viales oficiales dentro de Bogotá con OpenStreetMap (OSM) por fuera, para que la red se extienda mucho más allá del área de estudio y se eviten los efectos de borde. Si la unión resulta demasiado difícil, la v1 usa OSM en toda el área.
-2. Limpiar la red con [neatnet](https://uscuni.org/neatnet/).
-3. Calcular la centralidad con [cityseer](https://cityseer.benchmarkurbanism.com/). Los resultados se reportan solo dentro del área de estudio; el área de amortiguamiento solo se usa para calcular las rutas.
+1. Tomar los ejes viales oficiales de Bogotá (Malla Vial de IDECA) y limpiarlos con [neatnet](https://uscuni.org/neatnet/). La v1 usa solo esta fuente, así que la red termina en el límite de la ciudad y los valores cerca de él quedan subestimados; cada segmento registra su distancia al límite (ADR-0010). La unión con OpenStreetMap (OSM) por fuera de la ciudad se construyó y se probó, y queda para una versión posterior (ADR-0007, ADR-0008).
+2. Unir la red en segmentos de calle de intersección a intersección.
+3. Calcular la cercanía y la intermediación por el camino más simple (angular) sobre el grafo de segmentos con [cityseer](https://cityseer.benchmarkurbanism.com/) (ADR-0009). Los resultados se reportan solo dentro del área de estudio; el área de amortiguamiento solo se usa para calcular las rutas.
 
 Las primeras etapas cubren una selección de proyectos de renovación urbana de RENOBO en el centro de Bogotá. La ciudad completa viene después. La razón de cada decisión queda en un registro de decisión de arquitectura (ADR, por sus siglas en inglés) en [docs/decisions/](docs/decisions/).
 
@@ -24,10 +24,10 @@ Las primeras etapas cubren una selección de proyectos de renovación urbana de 
 | --- | --- | --- | --- |
 | [Mapa de Referencia](https://datosabiertos.bogota.gov.co/dataset/mapa-de-referencia), capa *Malla Vial* | IDECA / UAECD | Red vial actual dentro de Bogotá; límite de la ciudad | CC BY 4.0 |
 | [Perímetro urbano](https://datosabiertos.bogota.gov.co/dataset/perimetro-urbano-bogota-d-c) | SDP | Área urbana, que define hasta dónde llega la red (área urbana + 10 km) | CC BY 4.0 |
-| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Geometría de las vías arteriales construidas dentro de Bogotá (ADR-0008); vías proyectadas para escenarios futuros | CC BY 4.0 |
+| [Eje vial](https://datosabiertos.bogota.gov.co/dataset/eje-vial-bogota-d-c) | SDP | Geometría de las vías arteriales construidas dentro de Bogotá (ADR-0008, no se usa en la v1); vías proyectadas para escenarios futuros | CC BY 4.0 |
 | [Red infraestructura vial](https://datosabiertos.bogota.gov.co/dataset/red-infraestructura-vial-bogota-d-c) | SDP | Corredores de reserva vial, como referencia | CC BY 4.0 |
 | [Proyecto de RenoBo](https://datosabiertos.bogota.gov.co/dataset/proyecto-de-renobo) | RENOBO | Áreas de estudio del piloto | CC BY 4.0 |
-| [OpenStreetMap](https://www.openstreetmap.org/copyright) | Colaboradores de OSM | Red vial por fuera de Bogotá | ODbL 1.0 |
+| [OpenStreetMap](https://www.openstreetmap.org/copyright) | Colaboradores de OSM | Red vial por fuera de Bogotá (no se usa en la v1) | ODbL 1.0 |
 
 El portal de datos abiertos de Bogotá funciona con [CKAN](https://docs.ckan.org/en/2.10/api/). Su API entrega la licencia, la versión y las URL de descarga de cada conjunto de datos, que la ingesta usará para registrar la procedencia:
 
@@ -60,4 +60,4 @@ uv run pytest
 
 ## Licencia y cita
 
-Código: MIT ([LICENSE](LICENSE)). El pipeline instala cityseer, que tiene licencia AGPL-3.0 (ADR-0001). Datos publicados: ODbL 1.0, porque incluyen datos de OSM (ADR-0002). Cómo citar: [CITATION.cff](CITATION.cff).
+Código: MIT ([LICENSE](LICENSE)). El pipeline instala cityseer, que tiene licencia AGPL-3.0 (ADR-0001). Datos publicados: ODbL 1.0 (ADR-0002), elegida porque los resultados iban a incluir datos de OSM; la v1 usa solo fuentes CC BY 4.0 (ADR-0010). Cómo citar: [CITATION.cff](CITATION.cff).
