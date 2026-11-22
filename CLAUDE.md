@@ -7,14 +7,14 @@ Decisions live in `docs/decisions/` as ADRs. Read them before changing anything 
 ## Current status
 
 - Phase: **0, setup** (update this line when a phase closes).
-- ADRs 0001–0006 Accepted. Not decided yet: which centrality measures, orchestration, CLI.
+- ADRs 0001–0007 Accepted. Not decided yet: which centrality measures, orchestration, CLI.
 - Distances: 400, 800, 1200, 1600, 2000 and 5000 m (`config/analysis.yaml`).
 - Pilot: the 36 RENOBO polygons in `data/renobo_selection.gpkg` are drawn as dotted outlines. The live area is those polygons + 5 km, and the network is the live area + a 5 km dead buffer (ADR-0004).
-- v1 is one network, with no scenarios: MVI inside Bogotá + OSM outside. If the join at the boundary proves too hard, fall back to OSM only, recorded in a new ADR (ADR-0003). The first task is the join and its review layers.
+- v1 is one network, with no scenarios: MVI inside Bogotá + OSM outside, built once for the SDP urban perimeter + 10 km (ADR-0007). Each side is cleaned by neatnet with a 500 m overlap, then cut at the boundary and joined by connectors; no OSM piece may vanish in cleaning. OSM is always the latest Overpass data, with its timestamp recorded. The next task is the join and its review layers.
 
 ## Method in one paragraph
 
-Official IDECA Malla Vial centrelines inside Bogotá are joined with OSM outside it, with OSM only as the fallback (ADR-0003). neatnet does all the cleaning, and cityseer only analyses, with `set_boundary` so the buffer is dead (ADR-0004, ADR-0005). Everything internal is EPSG:9377 GeoParquet; tiles are PMTiles (ADR-0006).
+Official IDECA Malla Vial centrelines inside Bogotá are joined with OSM outside it by connector segments at the boundary (ADR-0003, ADR-0007). neatnet does all the cleaning, each source on its own before the join, and cityseer only analyses, with `set_boundary` so the buffer is dead (ADR-0004, ADR-0005). Everything internal is EPSG:9377 GeoParquet; tiles are PMTiles (ADR-0006).
 
 ## Stack
 
