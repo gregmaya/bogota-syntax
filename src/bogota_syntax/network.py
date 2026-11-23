@@ -62,6 +62,33 @@ def recover_attributes(
     return lines
 
 
+def collapse_short(lines: gpd.GeoDataFrame, min_m: float) -> gpd.GeoDataFrame:
+    """Remove lines shorter than `min_m` without disconnecting anything: the line ends that
+    met its far end are moved onto its near end. Loops that short are dropped.
+
+    cityseer drops degenerate segments (a few centimetres) when it builds its graph; doing
+    it here keeps the network and cityseer's graph identical (ADR-0009)."""
+    lines = lines.reset_index(drop=True).copy()
+    while True:
+        short = lines.index[lines.length < min_m]
+        if not len(short):
+            return lines.reset_index(drop=True)
+        i = short[0]
+        coords = np.asarray(lines.geometry[i].coords)
+        a, b = coords[0], coords[-1]
+        lines = lines.drop(index=i)
+        if np.allclose(a, b, atol=0.01, rtol=0):
+            continue
+        near = lines.index[lines.intersects(shapely.Point(b).buffer(0.02))]
+        for j in near:
+            c = np.asarray(lines.geometry[j].coords).copy()
+            if np.allclose(c[0], b, atol=0.01, rtol=0):
+                c[0] = a
+            if np.allclose(c[-1], b, atol=0.01, rtol=0):
+                c[-1] = a
+            lines.at[j, "geometry"] = shapely.LineString(c)
+
+
 def merge_chains(lines: gpd.GeoDataFrame, precision_m: float = 0.01) -> gpd.GeoDataFrame:
     """Merge lines through points where exactly two line ends meet, so each output line runs
     from an intersection or dead end to the next. Attributes come from the longest part;
@@ -121,6 +148,7 @@ def finish(
     osm_raw: gpd.GeoDataFrame | None,
     recover_m: float,
     boundary: shapely.Geometry,
+    min_segment_m: float = 0.5,
 ) -> gpd.GeoDataFrame:
     """Drop duplicate lines, recover attributes, merge to intersection-to-intersection
     segments and label pieces. Returns the segment network with a fixed column order.
@@ -143,6 +171,7 @@ def finish(
             lines, osm_raw, lines["source"].eq("osm"), "osmid", OSM_COLS, recover_m
         )
     lines = lines.rename(columns={"_status": "neatnet_status"})
+    lines = collapse_short(lines, min_segment_m)
     seg = merge_chains(lines).reset_index(drop=True)
     seg["segment_id"] = segment_id(seg.geometry.values)
     seg["length_m"] = seg.length.round(2)
@@ -217,11 +246,11 @@ def run(root) -> dict[str, Any]:
     if cfg["mode"] == "mvi_only":
         cleaned = gpd.read_parquet(interim / "clean" / "mvi_cleaned.parquet")
         lines = mvi_only(cleaned, boundary, cfg["extend_lines_m"])
-        seg = finish(lines, mvi_raw, None, cfg["recover_m"], boundary)
+        seg = finish(lines, mvi_raw, None, cfg["recover_m"], boundary, cfg["min_segment_m"])
     elif cfg["mode"] == "stitched":
         stitched = gpd.read_parquet(interim / "join" / "network.parquet")
         osm_raw = gpd.read_parquet(interim / "clean" / "osm_raw.parquet")
-        seg = finish(stitched, mvi_raw, osm_raw, cfg["recover_m"], boundary)
+        seg = finish(stitched, mvi_raw, osm_raw, cfg["recover_m"], boundary, cfg["min_segment_m"])
     else:
         raise ValueError(f"network.mode must be mvi_only or stitched, not {cfg['mode']!r}")
     out = data / "processed" / "network.parquet"

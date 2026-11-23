@@ -127,5 +127,8 @@ network:
   # Lines neatnet drew (no source id) take the attributes of the raw line with the most
   # length within this distance.
   recover_m: 15
+  # Lines shorter than this are collapsed into a point before merging (24 city-wide,
+  # 2026-11-22); cityseer would drop them and break the one-to-one match (ADR-0009).
+  min_segment_m: 0.5
 
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.

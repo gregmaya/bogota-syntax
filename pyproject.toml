@@ -12,6 +12,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
 ]
 dependencies = [
+    "cityseer>=5.8.0",
     "geopandas>=1.0",
     "neatnet>=0.1.6",
     "osmnx>=2.0",

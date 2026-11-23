@@ -148,3 +148,17 @@ def network() -> None:
     for (src, origin), n in s["attr_origin"].items():
         typer.echo(f"    {src:<16} {origin:<10} {n:>7,}")
     typer.echo(f"  -> {s['path'].relative_to(project_root())}")
+
+
+@app.command()
+def centrality() -> None:
+    """Pilot: simplest-path closeness and betweenness (ADR-0009) -> data/processed/."""
+    from bogota_syntax.centrality import run
+
+    s = run(project_root())
+    typer.echo(
+        f"  {s['segments']:,} segments ({s['live']:,} live), {s['km']:,.0f} km, "
+        f"{s['seconds']:.0f} s"
+    )
+    typer.echo(f"  columns: {', '.join(s['columns'])}")
+    typer.echo(f"  -> {s['path'].relative_to(project_root())}")

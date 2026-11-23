@@ -67,3 +67,17 @@ def test_attributes_recovered_from_overlapping_raw_line() -> None:
     )
     assert out.loc[0, "OBJECTID"] == 77 and out.loc[0, "MVITIPO"] == "CL"
     assert out.loc[0, "attr_origin"] == "recovered"
+
+
+def test_micro_segment_collapsed_without_disconnecting() -> None:
+    lines = _g(
+        [
+            ("mvi", 1, [(0, 0), (100, 0)]),
+            ("mvi", 2, [(100, 0), (100.03, 0)]),  # 3 cm
+            ("mvi", 3, [(100.03, 0), (200, 0)]),
+            ("mvi", 4, [(100.03, 0), (100.03, 100)]),
+        ]
+    )
+    out = network.collapse_short(lines, 0.5)
+    assert len(out) == 3
+    assert label_pieces(out).nunique() == 1
