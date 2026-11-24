@@ -151,6 +151,41 @@ def network() -> None:
 
 
 @app.command()
+def foreground() -> None:
+    """Clean SDP Eje Vial into the foreground network (ADR-0012) -> data/processed/foreground."""
+    from bogota_syntax.foreground import run
+
+    root = project_root()
+    s = run(root)
+
+    def cls(d: dict) -> str:
+        return ", ".join(f"{k} {v}" for k, v in d.items())
+
+    typer.echo(f"  0 input: {s['input_lines']:,} lines; dead ends {cls(s['input'])}")
+    typer.echo(f"  1 snapped: {s['snapped']} ends")
+    typer.echo(f"  2 crossings split: {s['crossings_split']}")
+    typer.echo(f"  3 removed: {s['stubs']} stubs, {s['duplicates']} duplicates")
+    typer.echo(f"  4 dead ends: {cls(s['classified'])}")
+    typer.echo(f"  5 pairs joined: {s['pairs']}")
+    steps = ", ".join(
+        f"{t['tol_m']:g} m +{t['extended']}" for t in s["extension_steps"] if t["extended"]
+    )
+    typer.echo(f"  6 extensions: {s['extensions']} ({steps})")
+    typer.echo(f"  7 junctions merged: {s['junctions_moved']} moved")
+    typer.echo(f"  8 connectors: {cls(s['connectors'])}; to review: {s['review']}")
+    typer.echo(
+        f"  10 jogs straightened: {s['jogs']}; "
+        f"vertices {s['vertices'][0]:,} -> {s['vertices'][1]:,}"
+    )
+    typer.echo(
+        f"  final: {s['segments']:,} segments, {s['km']:,.1f} km, {s['components']} components, "
+        f"{s['unsplit_crossings']} unsplit crossings; dead ends {cls(s['final'])}"
+    )
+    for k in ("path", "gpkg", "review_path"):
+        typer.echo(f"  -> {s[k].relative_to(root)}")
+
+
+@app.command()
 def centrality(
     area: Annotated[
         str, typer.Option(help="pilot (ADR-0004) or city (urban perimeter).")

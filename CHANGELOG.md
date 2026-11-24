@@ -26,3 +26,5 @@ All notable changes to this project are recorded here. Each release covers data,
 - `bogota-syntax centrality`: pilot run of simplest-path closeness (`cc_harmonic_<d>_ang`) and betweenness (`cc_betweenness_<d>_ang`) at six distances on the dual graph, cityseer's own cleaning off; `data/processed/centrality_pilot.parquet`. Adds cityseer (AGPL-3.0, ADR-0001).
 - `bogota-syntax centrality --area city`: the whole city, live inside the SDP urban perimeter; `data/processed/centrality_city.parquet` (local only, not published).
 - ADR-0011: angular density, farness and Hillier integration added to harmonic closeness and betweenness; expressions in `config/analysis.yaml` (`centrality:`).
+- New source `sdp_red_infraestructura_vial`: the POT arterial road polygons (SDP, CC BY 4.0).
+- ADR-0012 (Proposed) and `bogota-syntax foreground`: SDP Eje Vial cleaned into a foreground network, guided by the arterial polygons; `data/processed/foreground.{parquet,gpkg}` and review layers in `data/interim/foreground/review.gpkg`. Not used by v1 centrality.

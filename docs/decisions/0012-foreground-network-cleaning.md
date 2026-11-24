@@ -42,7 +42,7 @@ Each worked once it was limited to the places a classification picked out.
    | 0 | Explode, drop duplicate and zero-length lines | all | |
    | 1 | Snap each dead end onto another line's end, else onto the nearest point of a line | dead ends with a gap below the limit, any class | 5 m |
    | 2 | Split at T-junctions and at every crossing | all (bridges are not told apart yet) | |
-   | 3 | Remove dead-end segments that are short, or that run alongside other lines (duplicates); repeat with step 7's merge until stable | dead-end segments | stub < 20 m; duplicate: > 50% of length within 5 m of other lines |
+   | 3 | Remove dead-end segments that are short, or that run alongside other lines (duplicates, one per pass, so two lines beside each other don't both go); repeat with the merge until stable | dead-end segments | stub < 20 m; duplicate: > 50% of length within 5 m of other lines |
    | 4 | Classify dead ends (point 3) | dead ends | 1 m, 0.5 m |
    | 5 | Join two dead ends at their midpoint | mutual-nearest dead ends in the same or touching polygons, pointing opposite ways (≥ 135° apart) and not away from each other | 135° |
    | 6 | Extend onto the nearest line within a ±30° cone ahead, in growing steps; split and merge after every step | `critical` ends; the extension must stay inside the end's polygons plus their neighbours | 5 to 50 m in 5 m steps, ±30° |
@@ -59,13 +59,29 @@ Each worked once it was limited to the places a classification picked out.
    - **`neatnet.neatify` on the foreground.** It finds no artefact threshold on an arterial-only network. Set by hand, it removes whole blocks before it fixes much.
    - **`ESTADO` / `ESTADO_VIA`** (built vs planned). Ignored for now, to be added: a planned road can make a built dead end look critical.
 
-6. **Output.** One file, one row per segment, the Eje Vial fields kept as published (CLAUDE.md rule 6), plus `sources`, which lists what touched each segment (`original`, `pair`, `extension`, `connector`), and `length_m`. A diagnostic file holds one layer per correction (snaps, crossings split, stubs and duplicates removed, dead ends classified, pairs, extensions, merged junctions, connectors, review) and the remaining dead ends with their class. File names are settled in the implementation PR.
+6. **Output.** `data/processed/foreground.parquet` (and the same as `foreground.gpkg` for QGIS), one row per segment, the Eje Vial fields kept as published (CLAUDE.md rule 6), plus `sources`, which lists what touched each segment (`original`, `pair`, `extension`, `connector`), and `length_m`. `data/interim/foreground/review.gpkg` holds one layer per correction (snaps, crossings split, stubs and duplicates removed, dead ends classified, pairs, extensions, merged junctions, connectors, review) and the remaining dead ends with their class.
 
-7. **Implementation.** A new module and command, `bogota-syntax foreground`, ported from the prototype, with a test on a small fixture for each rule in point 4. **v1 is unchanged:** ADR-0010 still governs the network that centrality runs on, until a later ADR joins foreground and background.
+7. **Implementation.** `src/bogota_syntax/foreground.py` and the command `bogota-syntax foreground`, parameters under `foreground:` in `config/analysis.yaml`, and a test on a small synthetic layout for each rule (`tests/test_foreground.py`). The ported step reproduces the prototype's network exactly. **v1 is unchanged:** ADR-0010 still governs the network that centrality runs on, until a later ADR joins foreground and background.
 
 ## Results
 
-TODO: step-by-step counts, produced by `bogota-syntax foreground` once ported. The prototype's figures are not reproducible from the repository, so they are not quoted here (CLAUDE.md rule 2).
+From `bogota-syntax foreground` on 2026-11-24, Eje Vial as ingested on 2026-11-22 and the polygons on 2026-11-24 (1,414 polygons):
+
+| Step | Result | Dead ends (critical / corridor_end / no_polygon) |
+| --- | --- | --- |
+| 0. Input | 1,235 lines | 238 / 15 / 19 |
+| 1. Snap | 112 ends moved | |
+| 2. Split | 45 crossings split | |
+| 3. Remove | 18 stubs, 1 duplicate | |
+| 4. Classify | | 79 / 13 / 15 |
+| 5. Pairs | 7 joined | |
+| 6. Extend | 55 extensions; 17 of them at the 10 m step | |
+| 7. Merge junctions | 32 junctions moved | |
+| 8. Connect | 4 to a junction, 1 to a line; 5 to review | |
+| 10. Simplify | 16 jogs straightened; vertices 33,925 → 11,565 | |
+| Final | 1,041 segments, 1,074.7 km, 2 connected pieces, 0 crossings without a shared point | 5 / 13 / 15 |
+
+The 5 `critical` dead ends left are the review cases. Gregorio checked them in QGIS and accepted them as open: missing road segments in the source data, and corridors whose polygons carry on past where Eje Vial stops. The second connected piece is a single isolated line, left for the background network to reach.
 
 ## Alternatives considered
 
@@ -84,4 +100,3 @@ TODO: step-by-step counts, produced by `bogota-syntax foreground` once ported. T
   - add `ESTADO`;
   - classify interchanges for centre relocation;
   - handle bridges in step 2;
-  - add "foreground", "background" and the dead-end classes to `docs/glossary.md`.
