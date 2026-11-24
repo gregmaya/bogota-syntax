@@ -3,6 +3,9 @@
 data/*
 !data/.gitkeep
 
+# Local QGIS experiments (never committed; scripts graduate into src/)
+sandbox/
+
 # Geospatial and tabular outputs
 *.parquet
 *.geoparquet

@@ -17,5 +17,6 @@ ADRs are immutable once accepted. To change a decision, write a new ADR that sup
 | [0009](0009-analysis-graph-and-measures.md) | Segment (dual) graph, simplest-path closeness and betweenness | Accepted | 2026-11-22 |
 | [0010](0010-v1-mvi-only.md) | v1 network is MVI only; the stitched network is shelved | Accepted | 2026-11-22 |
 | [0011](0011-density-farness-hillier.md) | Add angular density, farness and Hillier integration | Accepted | 2026-11-23 |
+| [0012](0012-foreground-network-cleaning.md) | Foreground network from SDP Eje Vial, cleaned with the POT arterial polygons; classify before correcting | Proposed | 2026-11-24 |
 
 New ADRs copy [template.md](template.md) and take the next number.
