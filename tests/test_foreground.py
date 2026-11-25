@@ -2,7 +2,9 @@
 
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 import pytest
+import shapely
 from shapely.geometry import LineString, box
 
 from bogota_syntax import foreground as fg
@@ -143,3 +145,74 @@ def test_simplify_leaves_a_jog_that_would_leave_the_polygons(p) -> None:
     out, n_jogs = fg.simplify_lines(gdf, polys, p)
     assert n_jogs == 0
     assert np.allclose(out.geometry[0].coords, gdf.geometry[0].coords)
+
+
+# ── step 11: interchange centres ──────────────────────────────────────────────
+
+
+@pytest.fixture(scope="module")
+def r() -> fg.RelocationParams:
+    return fg.RelocationParams.from_config(load_analysis()["foreground"]["relocation"])
+
+
+def interchange(code: str = "900") -> gpd.GeoDataFrame:
+    g = gpd.GeoDataFrame(
+        {"NOMBRE": ["Enlace Vehicular prueba"], "CODIGO_ID": [code]},
+        geometry=[box(X0 - 50, Y0 - 50, X0 + 50, Y0 + 50)],
+        crs="EPSG:9377",
+    )
+    return g
+
+
+# Four straight approaches aimed at (0, 0), drawn meeting 20 m off it, at (20, 0).
+BENT = [
+    [(-200, 0), (-50, 0), (20, 0)],
+    [(20, 0), (50, 0), (200, 0)],
+    [(0, -200), (0, -50), (20, 0)],
+    [(20, 0), (0, 50), (0, 200)],
+]
+
+
+def decision(code: str, poly: gpd.GeoDataFrame, value: str):
+    rp = poly.geometry.representative_point().iloc[0]
+    return pd.DataFrame(
+        {
+            "codigo_id": [code],
+            "rep_x": [round(rp.x)],
+            "rep_y": [round(rp.y)],
+            "area_m2": [round(poly.area.iloc[0])],
+            "decision": [value],
+        }
+    )
+
+
+def centre_xy(lines: gpd.GeoDataFrame):
+    j, _ = fg.junctions(lines)
+    return [xy(shapely.Point(c), 0) for c in shapely.get_coordinates(j)]
+
+
+def test_relocation_moves_the_junction_to_where_the_approaches_meet(p, r) -> None:
+    poly = interchange()
+    out, enlace, _, stale = fg.relocate_centres(
+        lines(*BENT), poly, decision("900", poly, "relocate"), r
+    )
+    out, _ = fg.node_all(out, p.connected_m)
+    assert centre_xy(fg.consolidate(out)) == [(0, 0)]
+    assert enlace["rms_new"].iloc[0] < 0.01 and len(stale) == 0
+
+
+def test_keep_decision_leaves_the_interchange_as_drawn(r) -> None:
+    poly = interchange()
+    out, enlace, centres, _ = fg.relocate_centres(
+        lines(*BENT), poly, decision("900", poly, "keep"), r
+    )
+    assert len(centres) == 0 and enlace["action"].iloc[0] == "keep"
+    assert centre_xy(out) == [(20, 0)]
+
+
+def test_without_a_matching_decision_the_rule_applies_and_is_flagged(r) -> None:
+    poly = interchange()
+    moved = decision("900", poly, "keep").assign(rep_x=lambda d: d["rep_x"] + 50)
+    _, enlace, _, stale = fg.relocate_centres(lines(*BENT), poly, moved, r)
+    assert len(stale) == 1  # the decision no longer matches the polygon's shape
+    assert enlace["action"].iloc[0] == "relocate (rule)" and bool(enlace["needs_review"].iloc[0])

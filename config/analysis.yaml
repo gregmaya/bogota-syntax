@@ -168,6 +168,19 @@ foreground:
   jog_deg: 60
   jog_m: 30
   simplify_m: [1, 2]
+  # 11. interchange centres ("Enlace Vehicular" polygons). Decisions per interchange
+  #     come from Gregorio's QGIS labels of 2026-11-25 (scripts/make_enlace_decisions.py);
+  #     interchanges without one use the rule below, fitted to those labels, and are
+  #     flagged for review.
+  relocation:
+    decisions: config/enlace_decisions.csv
+    name_pattern: enlace
+    approach_m: 30          # an approach's direction is taken over this length
+    min_move_m: 10          # rule, 1 junction: the centre moves at least this far ...
+    max_rms_rel: 0.07       # ... and the approaches meet within 0.07 x sqrt(area)
+    max_move_rel: 0.20      # rule, 2+ junctions: collapse if the farthest is this close
+    match_point_m: 2        # a decision applies if the polygon's point is this close ...
+    match_area_share: 0.01  # ... and its area within 1%; otherwise it is "stale"
 
 # Simplest-path (angular) measures, passed to cityseer's centrality_simplest
 # (ADR-0009, ADR-0011). Expressions use c, the angular cost (degrees of turning on the

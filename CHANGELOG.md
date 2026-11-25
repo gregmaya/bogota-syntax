@@ -28,3 +28,4 @@ All notable changes to this project are recorded here. Each release covers data,
 - ADR-0011: angular density, farness and Hillier integration added to harmonic closeness and betweenness; expressions in `config/analysis.yaml` (`centrality:`).
 - New source `sdp_red_infraestructura_vial`: the POT arterial road polygons (SDP, CC BY 4.0).
 - ADR-0012 (Proposed) and `bogota-syntax foreground`: SDP Eje Vial cleaned into a foreground network, guided by the arterial polygons; `data/processed/foreground.{parquet,gpkg}` and review layers in `data/interim/foreground/review.gpkg`. Not used by v1 centrality.
+- `foreground` step 11: interchange centres relocated where `config/enlace_decisions.csv` says so (from Gregorio's QGIS labels of 2026-11-25), with a fitted rule for interchanges without a decision; those are flagged for review.

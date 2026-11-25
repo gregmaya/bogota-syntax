@@ -177,6 +177,13 @@ def foreground() -> None:
         f"  10 jogs straightened: {s['jogs']}; "
         f"vertices {s['vertices'][0]:,} -> {s['vertices'][1]:,}"
     )
+    if "relocation" in s:
+        typer.echo(
+            f"  11 interchange centres relocated: {s['relocated']}; to review: "
+            f"{s['needs_review']}; stale decisions (no matching polygon): {s['stale_decisions']}"
+        )
+        for (dec, act), n in sorted(s["relocation"].items()):
+            typer.echo(f"     decision {dec or '(none)':<9} -> {act:<15} {n:>4}")
     typer.echo(
         f"  final: {s['segments']:,} segments, {s['km']:,.1f} km, {s['components']} components, "
         f"{s['unsplit_crossings']} unsplit crossings; dead ends {cls(s['final'])}"

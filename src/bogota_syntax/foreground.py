@@ -9,7 +9,7 @@ Steps (numbers as in ADR-0012):
 1. snap_dead_ends      2. node_all            3. drop_stubs
 4. classify            5. pair_dead_ends      6. extend_step (in growing steps)
 7. merge_junctions     8. connect             9. node_all + consolidate
-10. simplify_lines
+10. simplify_lines     11. relocate_centres (interchanges: decisions, else a rule)
 """
 
 from __future__ import annotations
@@ -567,6 +567,173 @@ def simplify_lines(lines: gpd.GeoDataFrame, polys: gpd.GeoDataFrame, p: Params):
     return lines.assign(geometry=arr), n_jogs
 
 
+# ── step 11: interchange centres ──────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class RelocationParams:
+    """The `foreground.relocation:` block of config/analysis.yaml (ADR-0012, step 11)."""
+
+    decisions: str  # CSV of per-interchange decisions, relative to the project root
+    name_pattern: str  # polygons whose NOMBRE contains this (case-insensitive)
+    approach_m: float  # an approach's direction is taken over this length
+    min_move_m: float  # fallback, one junction: move at least this far ...
+    max_rms_rel: float  # ... and the approaches meet within this x sqrt(area)
+    max_move_rel: float  # fallback, 2+ junctions: collapse if the farthest is this close
+    match_point_m: float  # a decision matches a polygon whose point is this close ...
+    match_area_share: float  # ... and whose area differs by at most this share
+
+    @classmethod
+    def from_config(cls, cfg: dict[str, Any]) -> RelocationParams:
+        return cls(**{f.name: cfg[f.name] for f in fields(cls)})
+
+
+def approaches(lines: gpd.GeoDataFrame, poly, jpts: np.ndarray, approach_m: float):
+    """For an interchange polygon and the junctions inside it: the lines with an end at
+    one of them (row positions), their parts outside the polygon with which ends lie on
+    the edge, and each approach as (entry point, unit direction into the polygon) taken
+    over the last `approach_m` before the edge. Lines merely crossing a corner of the
+    polygon are not included."""
+    edge = poly.boundary
+    jset = {tuple(np.round(xy, 2)) for xy in shapely.get_coordinates(jpts)}
+    g = lines.geometry.values
+    hit = [
+        i
+        for i in lines.sindex.query(poly, predicate="intersects")
+        if {tuple(np.round(g[i].coords[k], 2)) for k in (0, -1)} & jset
+    ]
+    parts, apps = [], []
+    for i in hit:
+        for part in shapely.get_parts(shapely.difference(g[i], poly)):
+            if part.length < 0.05:
+                continue
+            ends = []
+            for end in (0, 1):
+                tip = np.array(part.coords[-1 if end else 0])
+                if edge.distance(shapely.Point(tip)) > 0.05:
+                    continue
+                L = part.length
+                ref = part.interpolate(max(L - approach_m, 0) if end else min(approach_m, L))
+                v = tip - np.array(ref.coords[0])
+                if np.linalg.norm(v) > 0:
+                    ends.append(end)
+                    apps.append((tip, v / np.linalg.norm(v)))
+            parts.append((i, part, ends))
+    return hit, parts, apps
+
+
+def meeting_point(apps, poly) -> tuple[np.ndarray, float]:
+    """The point closest (least squares) to all approach lines extended straight, and
+    rms: the root mean square of their perpendicular distances to it (small = the
+    approaches really meet there). point_on_surface if the point falls outside."""
+    E = np.array([e for e, _ in apps])
+    D = np.array([d for _, d in apps])
+    P = np.eye(2)[None] - D[:, :, None] * D[:, None, :]
+    x = np.linalg.lstsq(P.sum(axis=0), (P @ E[:, :, None]).sum(axis=0)[:, 0], rcond=None)[0]
+    if not poly.buffer(1).covers(shapely.Point(x)):
+        x = np.array(poly.point_on_surface().coords[0])
+    v = x - E
+    perp = v - (v * D).sum(axis=1)[:, None] * D
+    return x, float(np.sqrt((perp**2).sum(axis=1).mean()))
+
+
+def rebuild(lines: gpd.GeoDataFrame, hit, parts, x: np.ndarray) -> gpd.GeoDataFrame:
+    """Drop the inside parts of the `hit` lines and run each approach straight from the
+    polygon edge to `x`."""
+    rows = []
+    for i, part, ends in parts:
+        c = shapely.get_coordinates(part)
+        for end in ends:
+            c = np.vstack([c, x]) if end == 1 else np.vstack([x, c])
+        r = lines.iloc[i].copy()
+        r["geometry"] = shapely.LineString(c)
+        r["source"] = "relocated"
+        rows.append(r)
+    keep = lines.drop(index=lines.index[hit])
+    new = gpd.GeoDataFrame(rows, geometry="geometry", crs=lines.crs)
+    return pd.concat([keep, new], ignore_index=True).pipe(gpd.GeoDataFrame, crs=lines.crs)
+
+
+def match_decisions(enlace: gpd.GeoDataFrame, decisions: pd.DataFrame, r: RelocationParams):
+    """Match decisions to interchange polygons by CODIGO_ID, representative point and
+    area. Returns (decision per polygon, empty where none matches; the decision rows
+    that match no polygon: stale, e.g. a polygon SDP has redrawn)."""
+    rep = enlace.geometry.representative_point()
+    by_id = {k: g for k, g in decisions.groupby(decisions["codigo_id"].astype(str))}
+    out, used = [], set()
+    for cid, x, y, area in zip(
+        enlace["CODIGO_ID"].astype(str), rep.x, rep.y, enlace.area, strict=True
+    ):
+        g = by_id.get(cid)
+        if g is None:
+            out.append("")
+            continue
+        near = np.hypot(g["rep_x"] - x, g["rep_y"] - y) <= r.match_point_m
+        same = (g["area_m2"] - area).abs() <= r.match_area_share * area
+        hit = g[near & same]
+        out.append(hit["decision"].iloc[0] if len(hit) else "")
+        used.update(hit.index)
+    return out, decisions.drop(index=list(used))
+
+
+def fallback_relocate(row: dict, r: RelocationParams) -> bool:
+    """Rule for interchanges without a decision, fitted to the 2026-11-25 labels."""
+    if row["approaches"] < 2:
+        return False
+    if row["junctions"] == 1:
+        return row["move_m"] >= r.min_move_m and row["rms_rel"] <= r.max_rms_rel
+    return row["junctions"] >= 2 and row["move_rel"] <= r.max_move_rel
+
+
+def relocate_centres(
+    lines: gpd.GeoDataFrame,
+    polygons: gpd.GeoDataFrame,
+    decisions: pd.DataFrame,
+    r: RelocationParams,
+):
+    """Step 11. For each interchange polygon, in order: measure it, then relocate its
+    centre if its decision says `relocate`, or, without a decision, if the fallback rule
+    says so. Returns (lines, interchanges with their measures, `decision`, `action` and
+    `needs_review`, new centre points, stale decision rows)."""
+    enlace = polygons[polygons["NOMBRE"].fillna("").str.contains(r.name_pattern, case=False)].copy()
+    enlace["decision"], stale = match_decisions(enlace, decisions, r)
+    rows, centres = [], []
+    for pid, poly, dec in zip(enlace.index, enlace.geometry, enlace["decision"], strict=True):
+        poly = max(shapely.get_parts(poly), key=lambda q: q.area)
+        lines = lines.reset_index(drop=True)
+        jpts, _ = junctions(lines)
+        inside = jpts[shapely.intersects(jpts, poly)] if len(jpts) else jpts
+        hit, parts, apps = (
+            approaches(lines, poly, inside, r.approach_m) if len(inside) else ([], [], [])
+        )
+        row = {"polygon": pid, "junctions": len(inside), "approaches": len(apps)}
+        x = None
+        if len(apps) >= 2:
+            x, rms = meeting_point(apps, poly)
+            move = float(np.linalg.norm(shapely.get_coordinates(inside) - x, axis=1).max())
+            side = np.sqrt(poly.area)
+            row |= {"move_m": move, "rms_new": rms, "rms_rel": rms / side, "move_rel": move / side}
+        if dec in ("relocate", "keep", "review"):
+            act = dec == "relocate" and x is not None
+            row["action"] = "relocate" if act else "keep"
+        else:
+            act = x is not None and fallback_relocate(row, r)
+            row["action"] = ("relocate" if act else "keep") + " (rule)"
+        row["needs_review"] = dec in ("review", "") and len(inside) > 0
+        if act:
+            lines = rebuild(lines, hit, parts, x)
+            centres.append({"polygon": pid, "geometry": shapely.Point(x)})
+        rows.append(row)
+    stats = pd.DataFrame(rows).set_index("polygon")
+    enlace = enlace[["CODIGO_ID", "NOMBRE", "decision", "geometry"]].join(stats)
+    for c in ("move_m", "rms_new", "rms_rel", "move_rel"):
+        enlace[c] = enlace[c].round(3)
+    centres = gpd.GeoDataFrame(
+        pd.DataFrame(centres, columns=["polygon", "geometry"]), geometry="geometry", crs=lines.crs
+    )
+    return lines, enlace, centres, stale
+
+
 # ── run ───────────────────────────────────────────────────────────────────────
 
 
@@ -582,9 +749,16 @@ def components(lines: gpd.GeoDataFrame) -> int:
     return nx.number_connected_components(G)
 
 
-def clean(axes: gpd.GeoDataFrame, polygons: gpd.GeoDataFrame, p: Params) -> dict[str, Any]:
-    """Run steps 0-10 on Eje Vial `axes` with the arterial `polygons` (both EPSG:9377).
-    Returns the final network under "network", one layer per correction, and counts."""
+def clean(
+    axes: gpd.GeoDataFrame,
+    polygons: gpd.GeoDataFrame,
+    p: Params,
+    r: RelocationParams | None = None,
+    decisions: pd.DataFrame | None = None,
+) -> dict[str, Any]:
+    """Run steps 0-11 on Eje Vial `axes` with the arterial `polygons` (both EPSG:9377).
+    Step 11 runs only when `r` and `decisions` are given. Returns the final network under
+    "network", one layer per correction, and counts."""
     polys = prepare_polygons(polygons, p.polygon_touch_m)
     net = prepare_axes(axes)
     s: dict[str, Any] = {"input_lines": len(net), "input": status_counts(classify(net, polys, p))}
@@ -628,6 +802,17 @@ def clean(axes: gpd.GeoDataFrame, polygons: gpd.GeoDataFrame, p: Params) -> dict
     net, s["jogs"] = simplify_lines(net, polys, p)
     s["vertices"] = (v0, int(shapely.get_num_coordinates(net.geometry.values).sum()))
 
+    relocation = {}
+    if r is not None and decisions is not None:
+        net, enlace, centres, stale = relocate_centres(net, polygons, decisions, r)
+        net, _ = node_all(net, p.connected_m)
+        net = consolidate(net)
+        relocation = {"interchanges": enlace, "centres": centres}
+        s["relocation"] = enlace.groupby(["decision", "action"]).size().to_dict()
+        s["relocated"] = len(centres)
+        s["needs_review"] = int(enlace["needs_review"].sum())
+        s["stale_decisions"] = len(stale)
+
     final_dead = classify(net, polys, p)
     g = net.geometry.values
     a, b = shapely.STRtree(g).query(g, predicate="crosses")
@@ -652,7 +837,7 @@ def clean(axes: gpd.GeoDataFrame, polygons: gpd.GeoDataFrame, p: Params) -> dict
         "connectors": connectors,
         "review": review,
         "dead_ends_final": final_dead.drop(columns=drop),
-    }
+    } | relocation
     return {"network": net, "layers": layers, "summary": s}
 
 
@@ -669,7 +854,10 @@ def run(root: Path) -> dict[str, Any]:
     data = data_dir(root)
     axes = gpd.read_parquet(data / "interim" / f"{cfg['axes_source']}.parquet").to_crs(CRS)
     polygons = gpd.read_parquet(data / "interim" / f"{cfg['polygons_source']}.parquet").to_crs(CRS)
-    res = clean(axes, polygons, Params.from_config(cfg))
+    rcfg = cfg.get("relocation")
+    r = RelocationParams.from_config(rcfg) if rcfg else None
+    decisions = pd.read_csv(root / r.decisions, dtype={"codigo_id": str}) if r else None
+    res = clean(axes, polygons, Params.from_config(cfg), r, decisions)
 
     processed = data / "processed"
     processed.mkdir(parents=True, exist_ok=True)
