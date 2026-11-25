@@ -51,6 +51,7 @@ Each worked once it was limited to the places a classification picked out.
    | 9 | Split and merge into intersection-to-intersection segments (ADR-0009) | all | |
    | 10 | Straighten zig-zags, then Douglas-Peucker; a change is kept only if the line stays inside the polygons and crosses no other line; line ends never move | all | zig-zag: two turns > 60° within 30 m; Douglas-Peucker ≤ 2 m |
    | 11 | Relocate the interchange centre: drop the line parts inside the polygon and run each approach straight from the edge to the least-squares meeting point of the approach directions | "Enlace Vehicular" polygons whose decision in `config/enlace_decisions.csv` is `relocate`; without a decision, the rule in point 5 | approach direction over 30 m |
+   | 12 | Apply reviewed manual edits: remove the lines listed, add the lines drawn; nothing is merged afterwards | `config/foreground_edits.geojson` (from `scripts/make_foreground_edits.py`); a removal that matches no line is reported stale | match within 0.01 m |
 
    "Split and merge" (steps 6, 7 and 9) means: split lines where an end lands on another line, then merge lines that meet end to end with nothing else there.
 
@@ -58,14 +59,16 @@ Each worked once it was limited to the places a classification picked out.
    - **The labels are the decisions**, kept in `config/enlace_decisions.csv` (made by `scripts/make_enlace_decisions.py`): `relocate` (relocated and right), `keep` (not relocated and right, or relocated and wrong), `review` (not relocated and wrong: relocation alone doesn't fix it). Each row is keyed by `CODIGO_ID`, the polygon's representative point and its area, because `CODIGO_ID` is not unique and SDP may redraw polygons. A decision that no longer matches a polygon is reported as stale and not applied.
    - **Interchanges without a decision** use a rule fitted to the labels, and are flagged for review: one junction, relocate if the centre moves at least 10 m (a smaller move isn't worth losing the original geometry) and the approaches meet within 0.07 × √area (RMS distance of the approach lines to the new centre); two or more junctions, collapse into one if the farthest is within 0.20 × √area of the new centre. Three or more junctions are otherwise left alone.
 
-6. **Not in this step, on purpose:**
+6. **Manual edits (step 12).** After reviewing the flagged interchanges, Gregorio redrew a few places in QGIS. Those edits are kept as a reviewed patch, `config/foreground_edits.geojson`: the lines to remove and the lines to add, with exact coordinates, made by `scripts/make_foreground_edits.py` from the edited file and the pipeline's output without edits. The step applies them last and merges nothing afterwards, so the output is the edited network itself. A removal that no longer matches a line (for example after an upstream change) is reported, not forced. A rerun therefore reproduces the edited network instead of overwriting it.
+
+7. **Not in this step, on purpose:**
    - **Roundabout simplification,** until the background is added.
    - **`neatnet.neatify` on the foreground.** It finds no artefact threshold on an arterial-only network. Set by hand, it removes whole blocks before it fixes much.
    - **`ESTADO` / `ESTADO_VIA`** (built vs planned). Ignored for now, to be added: a planned road can make a built dead end look critical.
 
-7. **Output.** `data/processed/foreground.parquet` (and the same as `foreground.gpkg` for QGIS), one row per segment, the Eje Vial fields kept as published (CLAUDE.md rule 6), plus `sources`, which lists what touched each segment (`original`, `pair`, `extension`, `connector`, `relocated`), and `length_m`. `data/interim/foreground/review.gpkg` holds one layer per correction (snaps, crossings split, stubs and duplicates removed, dead ends classified, pairs, extensions, merged junctions, connectors, review), the remaining dead ends with their class, and the interchanges with their measures, decision, action and `needs_review`, plus the new centres.
+8. **Output.** `data/processed/foreground.parquet` (and the same as `foreground.gpkg` for QGIS), one row per segment, the Eje Vial fields kept as published (CLAUDE.md rule 6), plus `sources`, which lists what touched each segment (`original`, `pair`, `extension`, `connector`, `relocated`, `manual`), and `length_m`. `data/interim/foreground/review.gpkg` holds one layer per correction (snaps, crossings split, stubs and duplicates removed, dead ends classified, pairs, extensions, merged junctions, connectors, review), the remaining dead ends with their class, and the interchanges with their measures, decision, action and `needs_review`, plus the new centres.
 
-8. **Implementation.** `src/bogota_syntax/foreground.py` and the command `bogota-syntax foreground`, parameters under `foreground:` in `config/analysis.yaml`, and a test on a small synthetic layout for each rule (`tests/test_foreground.py`). The ported step reproduces the prototype's network exactly. **v1 is unchanged:** ADR-0010 still governs the network that centrality runs on, until a later ADR joins foreground and background.
+9. **Implementation.** `src/bogota_syntax/foreground.py` and the command `bogota-syntax foreground`, parameters under `foreground:` in `config/analysis.yaml`, and a test on a small synthetic layout for each rule (`tests/test_foreground.py`). The ported step reproduces the prototype's network exactly. **v1 is unchanged:** ADR-0010 still governs the network that centrality runs on, until a later ADR joins foreground and background.
 
 ## Results
 
@@ -84,9 +87,10 @@ From `bogota-syntax foreground` on 2026-11-25, Eje Vial as ingested on 2026-11-2
 | 8. Connect | 4 to a junction, 1 to a line; 5 to review | |
 | 10. Simplify | 16 jogs straightened; vertices 33,925 → 11,565 | |
 | 11. Interchange centres | 59 relocated: 54 by decision, 5 by the rule; 340 kept and 15 left for review by decision; 42 kept by the rule; 0 stale decisions | |
-| Final | 1,026 segments, 1,074.4 km, 2 connected pieces, 0 crossings without a shared point | 4 / 13 / 15 |
+| 12. Manual edits | 46 lines removed, 36 added (4.4 km redrawn); 0 stale | |
+| Final | 1,016 segments, 1,074.3 km, 2 connected pieces, 0 crossings without a shared point | 4 / 13 / 15 |
 
-The 4 `critical` dead ends left are review cases; a fifth, inside the Congreso Eucarístico / Ciudad Montes / Constitución interchange, goes when that interchange is relocated (a decision Gregorio labelled right). 36 interchanges are flagged for review: 14 labelled `review` that hold a junction, and 22 without a decision. Gregorio checked them in QGIS and accepted them as open: missing road segments in the source data, and corridors whose polygons carry on past where Eje Vial stops. The second connected piece is a single isolated line, left for the background network to reach.
+The 4 `critical` dead ends left are review cases; a fifth, inside the Congreso Eucarístico / Ciudad Montes / Constitución interchange, goes when that interchange is relocated (a decision Gregorio labelled right). 36 interchanges were flagged for review: 14 labelled `review` that hold a junction, and 22 without a decision. Gregorio reviewed them on 2026-11-25 and fixed by hand the ones that needed it (step 12); the output reproduces his edited network exactly, geometry for geometry. Gregorio checked them in QGIS and accepted them as open: missing road segments in the source data, and corridors whose polygons carry on past where Eje Vial stops. The second connected piece is a single isolated line, left for the background network to reach.
 
 ## Alternatives considered
 
@@ -103,5 +107,5 @@ The 4 `critical` dead ends left are review cases; a fifth, inside the Congreso E
 - Licences: both sources are CC BY 4.0, compatible with the project's ODbL outputs (ADR-0002); attribution to SDP goes in the README and the outputs' metadata.
 - Follow-up work:
   - add `ESTADO`;
-  - label the 22 interchanges without a decision and the 14 marked `review`, and add them to the table;
+  - fold the reviewed interchanges into `config/enlace_decisions.csv`, so later SDP updates keep their decisions;
   - handle bridges in step 2;

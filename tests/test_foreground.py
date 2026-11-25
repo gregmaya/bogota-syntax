@@ -216,3 +216,19 @@ def test_without_a_matching_decision_the_rule_applies_and_is_flagged(r) -> None:
     _, enlace, _, stale = fg.relocate_centres(lines(*BENT), poly, moved, r)
     assert len(stale) == 1  # the decision no longer matches the polygon's shape
     assert enlace["action"].iloc[0] == "relocate (rule)" and bool(enlace["needs_review"].iloc[0])
+
+
+# ── step 12: manual edits ─────────────────────────────────────────────────────
+
+
+def test_manual_edits_remove_matching_lines_add_new_ones_and_report_stale() -> None:
+    net = lines([(0, 0), (100, 0)], [(100, 0), (100, 100)], [(100, 0), (200, 0)])
+    edits = lines(
+        [(100, 100), (100, 0)],  # same line as row 1, drawn the other way
+        [(100, 0), (150, 80)],  # the replacement
+        [(0, 500), (50, 500)],  # matches nothing: stale
+    ).assign(edit=["remove", "add", "remove"])
+    out, stale = fg.apply_edits(net, edits.drop(columns="source"), 0.01)
+    assert len(out) == 3 and len(stale) == 1
+    assert sorted(xy(g, -1) for g in out.geometry) == [(100, 0), (150, 80), (200, 0)]
+    assert (out["source"] == "manual").sum() == 1

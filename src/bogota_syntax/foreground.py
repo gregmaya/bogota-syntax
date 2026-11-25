@@ -10,6 +10,7 @@ Steps (numbers as in ADR-0012):
 4. classify            5. pair_dead_ends      6. extend_step (in growing steps)
 7. merge_junctions     8. connect             9. node_all + consolidate
 10. simplify_lines     11. relocate_centres (interchanges: decisions, else a rule)
+12. apply_edits (reviewed manual edits, applied last as drawn)
 """
 
 from __future__ import annotations
@@ -734,6 +735,33 @@ def relocate_centres(
     return lines, enlace, centres, stale
 
 
+# ── step 12: manual edits ─────────────────────────────────────────────────────
+
+
+def apply_edits(lines: gpd.GeoDataFrame, edits: gpd.GeoDataFrame, match_m: float):
+    """Step 12. Apply reviewed manual edits (config/foreground_edits.geojson, made by
+    scripts/make_foreground_edits.py): drop each line matching an `edit: remove` geometry
+    (within `match_m`, Hausdorff), then add every `edit: add` row. Nothing is merged
+    afterwards, so the result is the edited network itself. Returns (lines, stale
+    removals that matched no line)."""
+    lines = lines.reset_index(drop=True)
+    g = lines.geometry.values
+    tree = shapely.STRtree(g)
+    drop, stale = set(), []
+    for k, geom in zip(edits.index, edits.geometry, strict=True):
+        if edits.at[k, "edit"] != "remove":
+            continue
+        cand = [
+            i
+            for i in tree.query(geom, predicate="dwithin", distance=match_m)
+            if shapely.hausdorff_distance(g[i], geom) <= match_m
+        ]
+        (drop.update(cand) if cand else stale.append(k))
+    add = edits[edits["edit"] == "add"].drop(columns="edit").assign(source="manual")
+    out = pd.concat([lines.drop(index=sorted(drop)), add], ignore_index=True)
+    return gpd.GeoDataFrame(out, geometry="geometry", crs=lines.crs), edits.loc[stale]
+
+
 # ── run ───────────────────────────────────────────────────────────────────────
 
 
@@ -755,10 +783,12 @@ def clean(
     p: Params,
     r: RelocationParams | None = None,
     decisions: pd.DataFrame | None = None,
+    edits: gpd.GeoDataFrame | None = None,
+    edits_match_m: float = 0.01,
 ) -> dict[str, Any]:
-    """Run steps 0-11 on Eje Vial `axes` with the arterial `polygons` (both EPSG:9377).
-    Step 11 runs only when `r` and `decisions` are given. Returns the final network under
-    "network", one layer per correction, and counts."""
+    """Run steps 0-12 on Eje Vial `axes` with the arterial `polygons` (both EPSG:9377).
+    Step 11 runs only when `r` and `decisions` are given, step 12 only with `edits`.
+    Returns the final network under "network", one layer per correction, and counts."""
     polys = prepare_polygons(polygons, p.polygon_touch_m)
     net = prepare_axes(axes)
     s: dict[str, Any] = {"input_lines": len(net), "input": status_counts(classify(net, polys, p))}
@@ -813,6 +843,17 @@ def clean(
         s["needs_review"] = int(enlace["needs_review"].sum())
         s["stale_decisions"] = len(stale)
 
+    edit_layers = {}
+    if edits is not None and len(edits):
+        n0 = len(net)
+        net, stale_edits = apply_edits(net, edits.to_crs(net.crs), edits_match_m)
+        s["edits"] = {
+            "removed": n0 - (len(net) - int((edits["edit"] == "add").sum())),
+            "added": int((edits["edit"] == "add").sum()),
+            "stale": len(stale_edits),
+        }
+        edit_layers = {"stale_edits": stale_edits}
+
     final_dead = classify(net, polys, p)
     g = net.geometry.values
     a, b = shapely.STRtree(g).query(g, predicate="crosses")
@@ -826,18 +867,22 @@ def clean(
         "final": status_counts(final_dead),
     }
     drop = ["area", "polys"]
-    layers = {
-        "snaps": snaps,
-        "crossings": crossings,
-        "removed": removed,
-        "dead_ends_classified": classified.drop(columns=drop),
-        "pairs": pairs,
-        "extensions": extensions,
-        "junctions_merged": moved,
-        "connectors": connectors,
-        "review": review,
-        "dead_ends_final": final_dead.drop(columns=drop),
-    } | relocation
+    layers = (
+        {
+            "snaps": snaps,
+            "crossings": crossings,
+            "removed": removed,
+            "dead_ends_classified": classified.drop(columns=drop),
+            "pairs": pairs,
+            "extensions": extensions,
+            "junctions_merged": moved,
+            "connectors": connectors,
+            "review": review,
+            "dead_ends_final": final_dead.drop(columns=drop),
+        }
+        | relocation
+        | edit_layers
+    )
     return {"network": net, "layers": layers, "summary": s}
 
 
@@ -857,7 +902,13 @@ def run(root: Path) -> dict[str, Any]:
     rcfg = cfg.get("relocation")
     r = RelocationParams.from_config(rcfg) if rcfg else None
     decisions = pd.read_csv(root / r.decisions, dtype={"codigo_id": str}) if r else None
-    res = clean(axes, polygons, Params.from_config(cfg), r, decisions)
+    edits_path = cfg.get("edits")
+    edits = (
+        gpd.read_file(root / edits_path) if edits_path and (root / edits_path).exists() else None
+    )
+    res = clean(
+        axes, polygons, Params.from_config(cfg), r, decisions, edits, cfg.get("edits_match_m", 0.01)
+    )
 
     processed = data / "processed"
     processed.mkdir(parents=True, exist_ok=True)

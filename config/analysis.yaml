@@ -181,6 +181,10 @@ foreground:
     max_move_rel: 0.20      # rule, 2+ junctions: collapse if the farthest is this close
     match_point_m: 2        # a decision applies if the polygon's point is this close ...
     match_area_share: 0.01  # ... and its area within 1%; otherwise it is "stale"
+  # 12. reviewed manual edits, applied last and not merged afterwards
+  #     (scripts/make_foreground_edits.py; Gregorio's QGIS edits of 2026-11-25)
+  edits: config/foreground_edits.geojson
+  edits_match_m: 0.01       # a removal matches a line within this Hausdorff distance
 
 # Simplest-path (angular) measures, passed to cityseer's centrality_simplest
 # (ADR-0009, ADR-0011). Expressions use c, the angular cost (degrees of turning on the

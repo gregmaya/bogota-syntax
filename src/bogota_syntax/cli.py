@@ -184,6 +184,12 @@ def foreground() -> None:
         )
         for (dec, act), n in sorted(s["relocation"].items()):
             typer.echo(f"     decision {dec or '(none)':<9} -> {act:<15} {n:>4}")
+    if "edits" in s:
+        e = s["edits"]
+        typer.echo(
+            f"  12 manual edits: {e['removed']} lines removed, {e['added']} added; "
+            f"stale removals (no matching line): {e['stale']}"
+        )
     typer.echo(
         f"  final: {s['segments']:,} segments, {s['km']:,.1f} km, {s['components']} components, "
         f"{s['unsplit_crossings']} unsplit crossings; dead ends {cls(s['final'])}"
