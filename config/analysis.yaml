@@ -131,6 +131,61 @@ network:
   # 2026-11-22); cityseer would drop them and break the one-to-one match (ADR-0009).
   min_segment_m: 0.5
 
+# Foreground network: SDP Eje Vial cleaned with the POT arterial polygons (ADR-0012).
+# Classify, then correct: only `critical` dead ends are extended or connected. Metres
+# and degrees, EPSG:9377. Values settled in QGIS review on 2026-11-24.
+foreground:
+  axes_source: sdp_eje_vial
+  polygons_source: sdp_red_infraestructura_vial
+  polygon_touch_m: 0.5        # polygons this close are neighbours (n_neighbours)
+  dead_end_near_m: 1          # a dead end takes the polygons within this distance
+  connected_m: 0.001          # an end this close to another line is connected
+  area_pad_m: 1               # slack when checking a new piece stays inside the polygons
+  direction_back_m: 5         # an end's direction is taken over this length of line
+  # 1. snap dead ends onto a line end, else a line, within this distance (any class)
+  snap_m: 5
+  # 3. drop dead-end segments shorter than stub_m, or with more than duplicate_share of
+  #    their length within duplicate_m of other lines
+  stub_m: 20
+  duplicate_m: 5
+  duplicate_share: 0.5
+  # 5. pair mutual-nearest dead ends pointing at least this far apart (180 = head on)
+  pair_opposed_deg: 135
+  # 6. extend critical dead ends in steps up to extend_max_m, in a +-cone ahead
+  extend_step_m: 5
+  extend_max_m: 50
+  extend_cone_deg: 30
+  # 7. merge junctions closer than this (neatnet.consolidate_nodes)
+  merge_junctions_m: 10
+  # 8. connectors: point ahead; not alongside another line; corner cuts; line cap
+  connect_ahead_deg: 90
+  connect_alongside_m: 2
+  connect_alongside_share: 0.25
+  connect_outside_max_m: 10
+  connect_line_max_m: 100
+  # 10. simplify: a jog is two turns sharper than jog_deg within jog_m; Douglas-Peucker
+  #     tolerances tried, largest first
+  jog_deg: 60
+  jog_m: 30
+  simplify_m: [1, 2]
+  # 11. interchange centres ("Enlace Vehicular" polygons). Decisions per interchange
+  #     come from Gregorio's QGIS labels of 2026-11-25 (scripts/make_enlace_decisions.py);
+  #     interchanges without one use the rule below, fitted to those labels, and are
+  #     flagged for review.
+  relocation:
+    decisions: config/enlace_decisions.csv
+    name_pattern: enlace
+    approach_m: 30          # an approach's direction is taken over this length
+    min_move_m: 10          # rule, 1 junction: the centre moves at least this far ...
+    max_rms_rel: 0.07       # ... and the approaches meet within 0.07 x sqrt(area)
+    max_move_rel: 0.20      # rule, 2+ junctions: collapse if the farthest is this close
+    match_point_m: 2        # a decision applies if the polygon's point is this close ...
+    match_area_share: 0.01  # ... and its area within 1%; otherwise it is "stale"
+  # 12. reviewed manual edits, applied last and not merged afterwards
+  #     (scripts/make_foreground_edits.py; Gregorio's QGIS edits of 2026-11-25)
+  edits: config/foreground_edits.geojson
+  edits_match_m: 0.01       # a removal matches a line within this Hausdorff distance
+
 # Simplest-path (angular) measures, passed to cityseer's centrality_simplest
 # (ADR-0009, ADR-0011). Expressions use c, the angular cost (degrees of turning on the
 # simplest route); they are cityseer 5.8's own defaults for these names.

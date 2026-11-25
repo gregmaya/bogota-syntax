@@ -3,6 +3,9 @@
 data/*
 !data/.gitkeep
 
+# Local QGIS experiments (never committed; scripts graduate into src/)
+sandbox/
+
 # Geospatial and tabular outputs
 *.parquet
 *.geoparquet
@@ -20,6 +23,9 @@ data/*
 *.mbtiles
 *.duckdb
 *.duckdb.wal
+
+# Reviewed decisions and edits are configuration, not outputs (ADR-0012).
+!config/foreground_edits.geojson
 *.zip
 
 # Street-network sources and graph formats

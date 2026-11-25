@@ -61,6 +61,19 @@ sources:
     # Arterial axes of the POT. Built arterials (chosen by distance to MVI, not by
     # ESTADO_VIA) replace the cleaned MVI arterials inside Bogotá (ADR-0008).
 
+  sdp_red_infraestructura_vial:
+    title: Red de infraestructura vial arterial, POT Bogotá D.C. (Decreto 555 de 2021)
+    publisher: Secretaría Distrital de Planeación (SDP)
+    licence: CC-BY-4.0
+    ckan_dataset: red-infraestructura-vial-bogota-d-c
+    kind: file
+    url: https://datosabiertos.bogota.gov.co/dataset/0e2bdaed-eb3c-4b14-90b4-44454013bbef/resource/40ddde9c-3867-4c06-8c42-db9d9bb99c79/download/redinfraestructuravialarterial.gpkg
+    layer: RedInfraestructuraVialArterial
+    # Full width of each POT arterial, cut into stretches between avenues; interchanges
+    # are their own polygons ("Enlace Vehicular ..."). Guides the foreground cleaning
+    # (ADR-0012). Arrives in PCS_CarMAGBOG. Licence checked against ODbL: CC BY 4.0,
+    # attribution only, as for sdp_eje_vial.
+
   osm_vias:
     title: OpenStreetMap streets
     publisher: OpenStreetMap contributors

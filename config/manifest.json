@@ -108,5 +108,21 @@
     "raw_file": "data/raw/sdp_perimetro_urbano/perimetrourbano.gpkg",
     "raw_sha256": "b295b6f55ba0760555b380e7f75a812c46f374d34433aa88b37b38bf69b460c2",
     "retrieved_at": "2026-11-22T16:48:11+00:00"
+  },
+  "sdp_red_infraestructura_vial": {
+    "ckan_dataset": "red-infraestructura-vial-bogota-d-c",
+    "ckan_license_id": "CC-BY-4.0",
+    "ckan_metadata_modified": "2026-11-19T15:54:21.469105",
+    "interim_file": "data/interim/sdp_red_infraestructura_vial.parquet",
+    "kind": "file",
+    "licence": "CC-BY-4.0",
+    "n_features": 1414,
+    "query": {
+      "layer": "RedInfraestructuraVialArterial",
+      "url": "https://datosabiertos.bogota.gov.co/dataset/0e2bdaed-eb3c-4b14-90b4-44454013bbef/resource/40ddde9c-3867-4c06-8c42-db9d9bb99c79/download/redinfraestructuravialarterial.gpkg"
+    },
+    "raw_file": "data/raw/sdp_red_infraestructura_vial/redinfraestructuravialarterial.gpkg",
+    "raw_sha256": "6568bc58c6778ffd6975f0a8f0147da9e47d6047cd48ce612a84086074dced48",
+    "retrieved_at": "2026-11-24T23:05:50+00:00"
   }
 }

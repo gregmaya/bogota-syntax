@@ -29,6 +29,7 @@ ORDER = [
     "sdp_perimetro_urbano",
     "ideca_malla_vial",
     "sdp_eje_vial",
+    "sdp_red_infraestructura_vial",
     "osm_vias",
 ]
 EXTENT_INPUTS = ["renobo_proyectos", "ideca_limite_bogota", "sdp_perimetro_urbano"]

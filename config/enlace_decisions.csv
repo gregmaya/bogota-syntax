@@ -1,0 +1,410 @@
+codigo_id,rep_x,rep_y,area_m2,decision,nombre
+1082,4882525,2074347,14160,keep,Enlace Vehicular avenidas Paseo de los Libertadores y Josemaría Escriva de Balaguer
+1083,4883029,2077377,16274,keep,Enlace Vehicular Avenidas Paseo de Los Libertadores y Pepe Sierra
+1084,4884229,2084117,65971,relocate,Enlace Vehicular Avenidas Paseo de Los Libertadores y San Antonio
+1085,4883145,2078183,81159,keep,"Enlace Vehicular avenidas Paseo de Los Libertadores, Callejas y Rodrigo Lara Bonilla"
+989,4879176,2086696,15341,relocate,Enlace Vehicular Vía a Cota con Vía Borde Norte
+990,4883785,2075780,49549,review,Enlace Vehicular Avenida Carlos Lleras Restrepo con Avenida Paseo del Country y Avenida Laureano Gómez
+1263,4878507,2075006,5066,relocate,Enlace Vehicular avenidas El Salitre y de La Constitución
+897,4882282,2072952,20879,relocate,Enlace Vehicular avenidas Caracas Chile y Paseo del Country
+1247,4880386,2075676,108582,keep,Enlace Vehicular avenidas Madellín y Congreso Eucarístico
+511,4881383,2077456,22328,keep,Enlace Vehicular  - avenidas Bateman y Pepe Sierra
+512,4880539,2081144,27495,keep,Enlace Vehicular Avenida Alfredo D. Bateman con Avenida Transversal de Suba
+513,4872820,2072567,17294,keep,Enlace Vehicular Avenida Guayacanes con Avenida Tintal
+1039,4871956,2077156,3791,keep,Enlace Vehicular avenidas La Esperanza - Luis Carlos Galán Sarmiento y del TAM
+1390,4875360,2071499,26112,keep,Enlace Vehicular Avenidas Centenario y Puente Aranda
+1216,4865980,2067021,2151,keep,Enlace Vehicular avenidas  Circunvalar del Sur y Ciudad de Cali
+1086,4883375,2079539,74523,relocate,"Enlace Vehicular avenidas Paseo de Los Libertadores, Contador e Iberia"
+1087,4883531,2075158,3634,keep,Enlace Vehicular avenidas Paseo del Country y Calle 94
+1088,4884393,2077883,8745,keep,Enlace Vehicular Avenidas Paseo del Country y Callejas
+1089,4884345,2077030,7840,keep,Enlace Vehicular avenidas Pepe Sierra y Paseo Del Country
+41,4886482,2081358,17635,keep,Enlace avenida Alberto Lleras camargo y Orquideas
+639,4881407,2072910,2087,review,Enlace Vehicular avenidas Colombia y Gabriel Andrade Lleras
+640,4881083,2071966,11396,keep,"Enlace Vehicular avenidas Colombia, José Celestino Mutis y par vial avenida Colombia"
+641,4878382,2068456,5744,keep,Enlace Vehicular avenidas Colón y Cundinamarca
+642,4879215,2067710,5666,keep,Enlace Vehicular avenidas Colón y General Santander
+659,4882609,2072703,4432,keep,Enlace Vehicular Avenidas Chile y Germán Arciniegas
+660,4875092,2078752,5845,keep,Enlace Vehicular avenidas Chile y Gonzalo Ariza
+643,4879821,2067178,17441,keep,Enlace Vehicular avenidas Colón y Mariscal Sucre
+644,4878547,2066886,5673,keep,Enlace Vehicular avenidas Comuneros y General Santander
+645,4874729,2063879,11898,keep,Enlace Vehicular avenidas Congreso Eucarístico y Mariscal Sucre
+646,4882277,2079901,9611,keep,Enlace Vehicular Avenidas Córdoba e Iberia
+586,4885889,2078821,38599,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y Contador
+587,4873842,2069763,90712,keep,Enlace Vehicular avenidas Boyacá y Américas
+588,4878597,2076038,11883,keep,Enlace Vehicular Avenidas Boyacá y Chile
+658,4878981,2075672,3513,keep,Enlace Vehicular avenidas Chile y Constitución
+576,4877386,2068429,67251,keep,Enlace Vehicular Avenida de Los Comuneros con  Avenida Ferrocarril del Sur
+577,4870599,2070789,11407,keep,Enlace Vehicular Avenida de los Muiscas con Avenida Tintal
+589,4881873,2082208,34752,keep,Enlace Vehicular Avenidas Boyacá y de La Sirena
+874,4876282,2052835,9741,keep,Enlace avenidas Circunvalar del Sur y Usminia
+710,4878578,2069629,12890,keep,Enlace Vehicular avenidas Ferrocarril de Occidente y Pedro León Trabuchy
+871,4883318,2088642,15279,keep,Enlace Avenida Low Murtra - Boyaca con Vía El Jardín
+862,4880769,2067267,2819,keep,Enlace Vehicular Avenidas Ciudad de Lima y Bacatá
+864,4877761,2062749,5722,keep,Enlace Vehicular avenidas Fernando Mazuera y Ciudad de Villavicencio
+936,4875303,2069066,25558,keep,"Enlace Vehicular avenidas Congreso Eucarístico, Ciudad Montes y Constitución"
+590,4876314,2073232,49641,keep,Enlace Vehicular avenidas Boyacá y La Esperanza Luis Carlos Galán
+591,4879379,2076862,102466,keep,Enlace Vehicular avenidas Boyacá y Medellín
+867,4878485,2060095,7686,keep,Enlace Vehicular Avenidas de La Guacamaya y de La Victoria
+869,4883632,2080750,18817,keep,"Enlace Vehicular avenidas Paseo de Los Libertadores , Cedritos y Transversal de Suba"
+727,4877724,2065817,23238,keep,"Enlace Vehicular Avenidas de La Hortua, Fucha y General Santander"
+632,4880718,2073484,49169,keep,"Enlace Vehicular Avenidas Ciudad de Quito, Simon Bolivar y Gabriel Andrade Lleras"
+633,4870737,2068724,23944,keep,Enlace Vehicular Avenidas Ciudad de Villavicencio y Agoberto Mejía
+634,4872338,2063336,8569,keep,Enlace Vehicular Avenidas Ciudad de Villavicencio y Mariscal Sucre
+635,4874828,2063147,13861,keep,Enlace Vehicular avenidas ciudad de villavicencio y par vial Congreso Eucarístico
+636,4873004,2062868,11602,relocate,Enlace Vehicular avenidas Ciudad de Villavicencio y Tunjuelito
+637,4877267,2067260,4048,keep,Enlace Vehicular avenidas Ciudad Montes y Cundinamarca
+941,4869296,2066575,4846,keep,Enlace Vehicular avenidas Bosa y San Bernardino
+942,4879622,2074950,118078,keep,Enlace Vehicular Avenidas Congreso Eucarístico y Chile
+548,4877425,2083137,149636,keep,Enlace Vehicular Avenida Longitudinal de Occidente y Transversal de suba
+654,4875426,2063586,9107,keep,Enlace Vehicular Avenidas Caracas y Santa Lucía
+573,4869706,2070377,22682,keep,Enlace Vehicular Avenida Ciudad de Villavicencio con Avenida Tintal
+574,4877734,2071359,13404,keep,Enlace Vehicular Avenida de La Esmeralda y Avenida Luís carlos Galán Sarmiento
+1076,4879154,2082047,14648,keep,Enlace Vehicular  avenidas Transversal de Suba y Conejera
+1067,4883397,2085215,6231,relocate,Enlace Vehicular avenida de Las Villas y Tibabita
+1071,4873698,2062113,17871,keep,"Enlace Vehicular avenidas Boyacá, Tunjuelito y San Francisco"
+1072,4875082,2062646,3500,keep,Enlace Vehicular avenidas Caracas y Tunjuelito
+819,4882131,2072437,2492,keep,"Enlace Vehicular avenidas Caracas, Gabriel Andrade Lleras y Bacatá"
+820,4874139,2074213,29709,keep,Enlace Vehicular avenidas Longitudinal de Occidente y Ferrocarril de Occidente
+593,4873266,2066819,145713,review,"Enlace Vehicular Avenidas Boyacá,  Ferrocarril del Sur y  Poporo Quimbaya"
+673,4880929,2067143,6491,keep,Enlace Vehicular Avenidas Ciudad de Lima y Fernando Mazuera
+674,4879604,2068175,5833,keep,Enlace Vehicular avenidas Ciudad de Lima y General Santander
+675,4882311,2081970,25503,keep,Enlace Vehicular avenidas de La Sirena y Villas
+676,4875221,2069722,52984,keep,Enlace Vehicular avenidas de Las Américas y de La Constitución
+678,4873066,2069844,8254,keep,Enlace Vehicular avenidas de Las Américas y Poporo Quimbaya
+680,4881090,2071382,1713,keep,Enlace Vehicular avenidas de Las Palmas y Colombia
+804,4882003,2069850,6009,keep,Enlace Vehicular avenidas Alberto llereas Camargo y Francisco Miranda
+713,4878248,2063303,6842,relocate,Enlace Vehicular avenidas Fernando Mazuera y José Asunción Silva
+569,4878476,2082569,42523,keep,Enlace Vehicular avenida Ciudad de Cali por Transversal de Suba
+571,4878241,2067089,30767,keep,Enlace Vehicular Avenida Ciudad de Quito  con Avenida Comuneros
+572,4879522,2068663,17687,keep,Enlace Vehicular Avenida Ciudad de Quito y  Avenida Ferrocarril de Occidente
+638,4880513,2072096,54482,keep,Enlace Vehicular Avenidas Ciudad Quito y José Celestino Mutis
+575,4881795,2067249,40060,review,Enlace Vehicular Avenidas de Los Cerros y el Dorado -  Jorge Eliécer Gaitán
+817,4881295,2067712,18701,keep,Enlace Vehicular Avenidas El Dorado -  Jorge Eliecer Gaitán y Alberto Llleras camargo y Fernando Mazuera
+1462,4876720,2073718,113636,keep,Enlace Vehicular avenidas El Dorado - Jorge Eliecer Gaitán y Boyacá
+1463,4876987,2073331,48875,keep,Enlace Vehicular Avenidas El Dorado -  Jorge Eliécer Gaitán y de La Constitución
+1465,4878088,2071637,33472,keep,Enlace Vehicular Avenidas El Dorado -  orge Eliecer Gaitán y  de La Esmeralda
+718,4880278,2069049,5750,keep,Enlace Vehicular Avenidas El Dorado - Jorge Eliecer Gaitán  y Teusaquillo
+1352,4880408,2071327,18030,keep,Enlace Vehicular avenidas Ciudad de Quito y Las Palmas
+1460,4885114,2089831,34726,keep,Enlace Vehicular Avenidas Paseo de Los Libertadores y Guaymaral
+1013,4875293,2075852,216286,relocate,Enlace Vehicular Avenidas Longitudinal de Occidente y El Dorado - Jorge Eliécer Gaitán
+580,4875889,2075098,150769,relocate,Enlace Vehicular Avenidas El Dorado -  Jorge Eliecer Gaitán y Ciudad de Cali
+973,4877575,2072347,215823,keep,Enlace Vehicular Avenidas El Dorado -  Jorge Eliécer Gaitán y del Congreso Eucarístico
+682,4878610,2070781,98101,keep,Enlace Vehicular Avenidas El Dorado - Jorge Eliécer Gaitán y Batallón Caldas
+623,4879252,2070153,7214,keep,Enlace Vehicular avenidas El Dorado - Jorge Eliécer Gaitán y  Pedro León Trabuchy
+684,4880110,2069376,27969,keep,Enlace Vehicular Avenidas El Dorado- - Jorge Eliecer Gaitán y Ciudad de Quito
+718,4880390,2069062,25545,keep,Enlace Vehicular Avenidas El Dorado - Jorge Eliecer Gaitán  y Teusaquillo
+686,4880791,2068477,21708,keep,Enlace Vehicular Avenidas El Dorado - Jorge Eliercer y Mariscal Sucre
+818,4881059,2068037,34158,keep,Enlace Vehicular Avenidas El Dorado - Jorge Eliecer Gaitán y  Caracas
+861,4881202,2067839,6767,keep,Enlace Vehicular Avenidas El Dorado -  Jorge Eliecer Gaitán y Bacatá
+966,4876601,2071095,7062,keep,Enlace Vehicular avenidas Congreso Eucarístico e Industrial
+967,4878781,2073700,89195,keep,Enlace Vehicular avenidas del Congreso Eucarístico y José Celestino Mutis
+968,4884444,2075439,25342,keep,Enlace Vehicular avenidas Carlos LLeras Restrepo y Germán Arciniegas
+969,4875525,2069596,68085,keep,Enlace Vehicular Avenidas de Las Américas y Congreso Eucarístico
+977,4881725,2088050,3375,keep,Enlace Vehicular Vía Secundaria del Norte con Vía de Las Flores
+981,4880523,2088501,3403,keep,Enlace Vehicular Vía Borde Norte con Vía de Las Flores
+1105,4871094,2065898,104531,keep,"Enlace Vehicular Avenidas Ciudad de Quito, Ciudad de Villavicencio y Ferrocarril del Sur"
+1106,4875673,2066667,21750,keep,Enlace Vehicular Avenidas Primero de Mayo y Batallón Caldas
+1107,4871111,2068087,17496,keep,Enlace Vehicular Avenidas Primero de Mayo y Ciudad de Villavicencio
+857,4875197,2062983,24822,keep,Enlace Vehicular avenidas Caracas y Ciudad de Villavicencio
+858,4877099,2062367,7980,keep,"Enlace Vehicular avenidas Fernando Mazuera, Dario Echandía y Ciudad deVillavicencio"
+1021,4877377,2071782,40876,relocate,Enlace Vehicular avenidas Congreso Eucarístico y Luis Carlos Galan
+1022,4881893,2076234,26822,keep,Enlace Vehicular  - avenidas Bateman y España
+1023,4883360,2075875,7391,keep,Enlace Vehicular avenidas Carlos Lleras Restrepo y Santa Bárbara
+1452,4884725,2087563,13239,keep,Enlace Vehicular avenidas Paseo de Los Libertadores y Calle 215
+541,4874852,2064935,28734,relocate,Enlace Vehicular Avenida Jorge Gaitán Cortes con Avenida Santa Lucia
+542,4875772,2076519,152329,relocate,Enlace Vehicular Avenida José Celestino Mutis con Avenida Longitudinal de Occidente
+543,4878823,2069780,5699,keep,Enlace Vehicular Avenida La Esperanza con Avenida Pedro León Trabuchy
+962,4881509,2074616,109239,keep,"Enlace Vehicular avenidas Ciudad de Quito, Medellín y Alfredo D. Báteman"
+963,4876134,2071461,4204,keep,Enlace Vehicular Avenidas de La Constitución e Industrial
+964,4879699,2065215,4818,keep,Enlace Vehicular Avenidas Fernando Mazuera y de La Hortúa
+965,4876407,2071889,28174,review,Enlace Vehicular Avenidas Ferrocarril de Occidente y Constitución
+1133,4871350,2071428,45787,keep,Enlace Vehicular Avenida Manuel Cepeda Vargas con Avenida El Tintal
+960,4880121,2087651,3366,keep,Enlace Vehicular Vía Los Arrayanes con Vía Borde Norte
+1122,4884393,2081930,3926,keep,Enlace Vehicular Avenida Santa Bárbara con Avenida de Las Orquídeas
+1357,4875109,2069138,17163,relocate,"Enlace Vehicular avenidas Congreso Eucarístico, Ciudad Montes y Constitución"
+1232,4870301,2069590,103112,review,Enlace Vehicular avenidas Ciudad de Villavicencio y Ciudad de Cali
+581,4873780,2060140,18667,relocate,Enlace Vehicular Avenidas Alameda del Sur y Camino de Pasquilla
+1392,4875741,2070726,57119,relocate,Enlace Vehicular avenidas Centenario y de la Constitución
+1156,4869398,2066167,109138,keep,Enlace Vehicular avenidas Bosa y Sur
+1286,4882111,2089030,3380,review,Enlace Vehicular vías Secundaría Rural del Nortey Jardin
+1287,4884946,2082852,23515,keep,Enlace Vehicular Avenida San Juan Bosco con Avenida Jorge Uribe Botero
+1233,4869009,2068822,36874,keep,Enlace Vehicular avenidas Ciudadde cali y Primero de mayo
+1289,4885010,2081803,6976,keep,Enlace Vehicular Avenida Santa Bárbara con Avenida de Las Orquídeas
+1157,4878771,2052742,42819,keep,Enlace Vehicular Avenida Autopista al Llano con Avenida de Los Cerros
+1295,4884581,2080676,7027,keep,Enlace Vehicular Avenidas  Cedritos y Jorge Uribe Botero
+1296,4881802,2081407,34837,keep,Enlace Vehicular Avenida Boyacá con Avenida Transversal de Suba
+669,4875245,2074334,63875,keep,Enlace Vehicular avenidas Ciudad de Cali y La Esperanza  Luis Carlos Galán
+670,4877002,2076313,17301,keep,Enlace Vehicular avenidas Ciudad de Cali y Salitre
+671,4881630,2066687,11687,keep,"Enlace Vehicular avenidas Ciudad de Lima ,Colon y Carrera 3a."
+1161,4878949,2067915,15419,keep,Enlace Vehicular Avenida Ciudad de Quito y Avenida Colón - Plano record IDU
+584,4885994,2077606,23071,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y Callejas
+585,4886272,2079974,12551,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y Cedritos
+653,4876095,2063770,3803,keep,Enlace Vehicular avenidas Caracas y Quiroga
+744,4880791,2070091,19592,keep,Enlace Vehicular Avenidas Colombia y Mariscal Sucre Con Avenida Francisco Miranda
+1380,4870935,2076419,80465,keep,Enlace Vehicular avenidas Centenario y TAM
+1231,4879231,2074333,11065,keep,Enlace Vehicular Avenida Congreso Eucarístico y El Salitre
+1292,4884772,2081249,19662,keep,Enlace Vehicular Avenidas de La Sirena y Jorge Uribe Botero
+549,4877099,2079880,25606,keep,Enlace Vehicular Avenida Morisca y Bolivia
+550,4869739,2068004,12549,keep,Enlace Vehicular Avenida Primero de Mayo con Avenida Agoberto Mejia Cifuentes
+551,4868302,2070595,7068,keep,Enlace Vehicular Avenida Primero de Mayo con Avenida Santa Fé
+1376,4872220,2074416,34670,keep,Enlace Vehicular avenidas Centenario y Carrera 106
+1378,4871806,2075532,12068,keep,Enlace Vehicular avenidas Centenario y Versalles
+552,4881172,2078674,23776,keep,Enlace Vehicular  avenidas Bateman yRodrigo  Lara Bonilla
+553,4881861,2084094,97204,keep,Enlace Vehicular Avenida San José con Avenida Boyacá
+554,4884116,2080713,5508,keep,Enlace Vehiculae Avenida Cedritos y Santa Bárbara
+555,4880381,2071040,37007,keep,Enlace Vehicular AvenidaCiudad de Quito y Pablo VI
+615,4878293,2070557,36165,keep,Enlace Vehicular Avenidas Batallón Caldas y La Esperanza
+616,4877452,2069671,2832,keep,Enlace Vehicular avenidas Batallón Caldas y Puente Aranda
+617,4867172,2070075,7770,keep,Enlace Vehicular avenidas Bosa y Santa Fe
+618,4881126,2080208,38484,keep,Enlace Vehicular avenidas Boyaca e Iberia
+692,4883420,2073881,2977,keep,Enlace Vehicular avenidas Josemaría Escrivá de Balaguer y Germán Arciniegas
+620,4886030,2084928,6151,keep,Enlace Vehicular Avenidas  Alberto Lleras Camargo y Tibabitá
+621,4873909,2060535,25083,keep,"Enlace Vehicular Avenidas  Boyacá, Camino de Pasquilla"
+622,4881804,2080101,13975,keep,Enlace Vehicular Avenidas  de Las Villas e Iberia
+1269,4866641,2067446,17551,keep,Enlace Vehicular avenidas Ciudad de Cali y San Bernardino
+1320,4875821,2058214,64326,keep,Enlace Vehicular avenidas Caracas y Boyacá
+1321,4875742,2060207,46416,keep,Enlace Vehicular avenidas Caracas y Guacamayas
+1139,4883942,2079363,14084,keep,Enlace Vehicular Avenida Santa Bárbara con Avenida Contador
+1140,4884288,2081474,7567,keep,Enlace Vehicular Avenida Santa Bárbara con Avenida La Sirena
+1141,4883594,2077282,6968,keep,Enlace Vehicular Avenida Santa Bárbara con Avenida Pepe Sierra
+1142,4884296,2084926,12893,relocate,Enlace Vehicular Avenidas Paseo de los Libertadores y Tibabita
+1143,4884800,2084878,9874,keep,Enlace Vehicular Avenida Tibabita con Avenida Santa Bárbara
+565,4883672,2078035,11034,keep,Enlace Vehicular Avenida Callejas con Avenida Santa Bárbara
+566,4880267,2066787,7006,keep,Enlace Vehicular Avenida Caracas y Avenidas Colón y Jiménez
+567,4872001,2071993,32556,keep,Enlace Vehicular Avenida Castilla  con Avenida Tintal
+568,4872431,2071466,38675,keep,Enlace Vehicular Avenida Ciudad de Cali con Avenida Castilla
+619,4880846,2079763,94070,review,Enlace Vehicular avenidas Boyáca y Alfredo D. Báteman
+1238,4875328,2072105,11672,keep,Enlace Vehicular Avenidas Boyacá e Industrial
+1194,4879356,2066307,4579,keep,Enlace Vehicular Avenida Mariscal Sucre - Par Vial Oriental con Avenida de Los Comuneros
+1195,4882629,2075113,112695,review,Enlace Vehicular Avenida Paseo de los Libertadores con Avenida Ciudad de Quito
+1234,4868425,2068450,23768,relocate,Enlace Vehicular avenidas Ciudad de Cali y Bosa
+1298,4885589,2080876,8901,keep,Enlace avenidas Laureano Gómez y de la Sirena
+693,4882991,2074125,4186,keep,Enlace Vehicular avenidas Josemaría Escrivá de Balaguer y Paseo derl Country par vial occidental
+694,4885472,2077779,23377,keep,Enlace Vehicular Avenidas Laureano Gómez y Callejas
+695,4884727,2076299,47667,review,Enlace Vehicular Avenidas Laureano Gómez y Germán Arciniegas
+1333,4878800,2072123,11588,keep,Enlace vehicular avenidas La Ssmeralda y Pablo VI
+1239,4872319,2076086,96968,relocate,Enlace Vehicular Avenidas Ferrocarril de Occidente y Versalles
+1401,4877279,2069390,146379,relocate,Enlace Vehicular 1 - Puente Aranda
+1422,4872084,2070360,30482,relocate,Enlace Vehicular Avenida Manuel Cepeda Vargas con Avenida Agoberto Mejia Cifuentes
+610,4881420,2077249,5320,keep,Enlace Vehicular Avenidas Alfredo D. Bátemán y Constitución
+612,4875414,2070346,7344,keep,Enlace Vehicular Avenidas Guayacanes y de La Constitución
+613,4877754,2070062,2898,keep,Enlace Vehicular avenidas Batallón Caldas e Industrial
+614,4875987,2067246,3762,keep,Enlace Vehicular avenidas Batallón Caldas y Fucha
+698,4877654,2084090,20650,keep,Enlace Vehicular Avenidas Longitudinal de Occidente y  de Las Mercedes
+699,4876542,2077595,20569,keep,Enlace Vehicular avenidas Longitudinal de Occidente y Chile
+700,4881218,2071361,1545,keep,Enlace Vehicular avenidas de Las Palmas y Colombia
+701,4880115,2065822,23024,keep,Enlace Vehicular avenidas Fernando Mazuera y de Los Comuneros
+1396,4875985,2070529,35880,relocate,Enlace Vehicular Avenidas Centenario y Congreso Eucarístico
+688,4876643,2065780,7480,keep,Enlace Vehicular avenidas Jorge Gaitán Cortés y Primero de Mayo
+690,4874230,2077712,2847,keep,Enlace Vehicular Avenidas José celestino Mutis y Gonzalo Ariza
+691,4874582,2077439,3068,keep,Enlace Vehicular Avenidas José celestino Mutis y Gonzalo Ariza
+1398,4876705,2069955,15993,relocate,Enlace Vehicular avenidas Centenario y de La Esmeralda
+696,4885304,2076780,10482,keep,Enlace Vehicular avenidas Laureano Gómez y Pepe Sierra
+697,4885676,2084081,27296,keep,Enlace Vehicular avenidas Laureano Gómez y San ASntonio
+1152,4885594,2081653,5394,keep,Enlace Vehicular Avenida Laureano Gómez con Avenida de Las Orquídeas
+1419,4871059,2070211,21190,keep,Enlace Av. Ciudad de Cali con Av. de Los Muiscas
+1230,4878110,2075346,10468,keep,Enlace Vehicular avenidas Boyacá y El Salitre
+1335,4877411,2070833,12668,relocate,Enlace Vehicular avenidas Ferrocarril de Occidente y de La Esmeralda
+1240,4885304,2084816,23870,keep,Enlace Vehicular Avenida Tibabita y Jorge Uribe Botero
+1428,4866224,2069683,7589,keep,Enlace Vehicular Avs. Santa Fe y San Bernardino
+625,4873830,2071958,31327,keep,Enlace Vehicular Avenidas Agoberto Mejia Cifuentes y Guayacanes
+626,4868247,2066592,5333,keep,Enlace Vehicular avenidas Agoberto Mejía y San Bernardino
+627,4877179,2066184,24751,keep,"Enlace Vehicular Avenidas Ciudad de Quito , Fucha  y Jorge Gaitán Cortés"
+628,4880982,2073857,23417,keep,Enlace Vehicular avenidas Ciudad de Quito y Chile
+1036,4882082,2074042,27513,keep,Enlace Vehicular avenidas Medellín y Colombia
+556,4885441,2076713,10270,keep,Enlace Vehicular Avenidas  Alberto Lleras  y Pepe Sierra
+557,4882142,2070750,4491,relocate,Enlace Vehicular Avenidas  Alberto Lleras Camargo y Pablo VI
+558,4879579,2071571,28219,keep,Enlace Vehicular Avenida Batallón Caldas con Avenida Pablo VI
+559,4867444,2069585,35599,keep,Enlace Vehicular Avenida Bosa con Avenida Tintal
+704,4871376,2076803,22597,keep,Enlace Vehicular avenidas Ferrocarril de Occidenet y TAM
+705,4875218,2073105,11652,keep,Enlace Vehicular Avenidas Ferrocarril de Occidente y Agoberto Mejía
+706,4877937,2070295,18713,keep,Enlace Vehicular avenidas Ferrocarril de Occidente y Batallón Caldas
+707,4873097,2075287,8988,keep,Enlace Vehicular avenidas Ferrocarril de Occidente y Carrera 106
+780,4884241,2074028,6874,keep,Enlace Avenida de los cerros y Vía a la Calera
+1090,4883271,2084671,12334,keep,Enlace Vehicular avenidas  San Antonio y Las Villas
+560,4873651,2068458,65699,keep,Enlace Vehicular Avenida Boyacá  con Avenida Primero de Mayo
+561,4875304,2057908,30105,keep,Enlace Vehicular Avenida Boyaca con Autopista al llano
+562,4881521,2080718,10802,keep,Enlace Vehicular Avenida Boyacá con Avenida Camino del Prado Sargento Inocencio Chinca
+563,4873714,2062757,117479,relocate,Enlace Vehicular Avenida Boyacá con Avenida Ciudad de Villavicencio
+708,4873689,2074670,9717,keep,Enlace Vehicular avenidas Ferrocarril de Occidente y Fontibón
+709,4879791,2068387,9411,keep,Enlace Vehicular avenidas Ferrocarril de Occidente y General Santander
+544,4885545,2080249,11991,keep,Enlace Vehicular Avenida Laureano Gómez con Avenida de Los Cedritos
+655,4882972,2072453,6937,keep,Enlace Vehicular Avenidas Chile y Alberto lLeras Camargo
+656,4875942,2078103,2336,keep,Enlace Vehicular Avenidas Chile y Bolivia
+657,4881687,2073352,8962,keep,Enlace Vehicular avenidas Chile y Colombia
+500,4880257,2074436,4038,keep,Enlace Vehicular avenidas de La Esmeralda y Chile
+501,4878090,2068716,7985,keep,Enlace Vehicular Avenida Colón con Avenida Ferrocarril del Sur
+504,4877953,2066762,6487,keep,Enlace Vehicular  avenidas Ciudad de Quito y Ciudad Montes
+514,4877435,2055627,21951,relocate,Enlace Vehicular Avenida Autopista del Llano con Avenida Usminia
+545,4883023,2075384,92526,keep,"Enlace Vehicular Avenida Paseo de los Libertadores, Avenida Laureano Gómez con Avenida Calle 94"
+546,4885687,2084931,6861,keep,Enlace Vehicular Avenida Laureano Gómez y Tibabita
+547,4876876,2078332,181118,relocate,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida Medellín
+629,4882188,2074837,12384,keep,Enlace Vehicular avenidas Ciudad de Quito y Colombia
+630,4876558,2065968,28705,relocate,Enlace Vehicular Avenidas Ciudad de Quito y Primero de mayo
+631,4874853,2065615,57847,keep,"Enlace Vehicular Avenidas Ciudad de Quito, Batallón Caldas y General Santander y Avenida Santalucía"
+505,4879325,2068424,45853,keep,Enlace Vehicular Avenida  Ciudad de Quito y Avenida Ciudad de Lima
+661,4875284,2078615,2092,keep,Enlace Vehicular avenidas Chile y Gonzalo Ariza
+647,4882520,2080353,4475,keep,Enlace Vehicular Avenidas Córdoba y Camino del Prado Sargento Inocencio Chinca
+515,4879870,2072259,22954,keep,Enlace Vehicular Avenida Batallón Caldas con Avenida José  Celestino Celestino Mutis
+958,4881606,2087531,3976,keep,Enlace Vehicular vías Secundaria del Norte y Arrayanes
+1035,4877950,2077801,88513,keep,Enlace Vehicular avenidas Medellín y Ciudad de Cali
+506,4876079,2061095,103824,keep,Enlace Vehicular Avenida  Darío Echandía por Avenida de la Guacamaya
+507,4876642,2061404,20107,keep,Enlace Vehicular Avenida  Darío Echandía por Avenida de la Guacamaya
+667,4865458,2068742,6727,keep,Enlace Vehicular Avenidas Circunvalar del Sur y Tintal
+592,4877285,2074269,7466,keep,Enlace Vehicular Avenidas Boyacá y Pablo VI
+1387,4875104,2071831,103903,keep,Enlace Vehicular avenidas Centenario y Boyacá
+1168,4880931,2081400,5335,relocate,Enlace Vehicular Avenidas Transversal de Suba y Camino del Prado - Sargento Inocencio Chincá
+1275,4871453,2072735,20763,keep,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida Castilla
+578,4876409,2068047,17091,keep,Enlace Vehicular Avenida Ferrocarril del Sur con Avenida Batallón Caldas y Avenida Ciudad Montes
+579,4882090,2066754,8952,keep,"Enlace Vehicular Avenidas Jiménez, de Los Cerros y El Dorado y El Dorado - Jorge Eliecer Gaitán"
+1217,4871781,2070874,75426,keep,Enlace Vehicular Avenidas Manuel Cepeda Vargas y Ciudad de Cali
+1219,4876580,2054894,3062,keep,Enlace par vial Avenida Usminia
+1276,4865331,2070182,46980,keep,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida Circunvalar del Sur
+1345,4873630,2063395,28904,relocate,Enlace Vehicular avenidas Boyacá y Maríscal Sucre
+1274,4866696,2070911,22241,keep,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida Bosa
+1413,4884780,2082921,16345,keep,Enlace Vehicular Avenida Santa Bárbara con Avenida San Juan Bosco
+1277,4870672,2072192,154532,relocate,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida Manuel Cepeda Vargas
+882,4877586,2074653,14809,review,Enlace  Avenidas Boyacá y José Celestino Mutis
+883,4876419,2075677,51023,keep,Enlace Vehicular Avenidas Ciudad de Cali y José Celestino Mutis
+1014,4876099,2076863,15846,keep,Enlace Vehicular Avenidas Longitudinal de Occidente y Salitre
+1348,4871561,2064210,56767,keep,Enlace Vehicular Avenidas Jorge Gaitán Cortes y Ciudad de Villavicencio
+811,4874680,2074977,29940,keep,Enlace Vehicular Avenidas Longitudinal de Occidente y Esperanza - Luis Carlos Galán Sarmiento
+944,4876280,2070790,7898,keep,Enlace Vehicular Avenidas  Congreso Eucarístico y Puente Aranda
+945,4873810,2065833,57140,review,Enlace Vehicular Avenidas Ciudad de Quito y  Congreso Eucarístico
+1018,4876907,2072424,14949,keep,Enlace Vehicular Avenidas Luis Carlos Galán y de La Constitución
+1016,4876718,2072758,14120,relocate,Enlace Vehicular Avenidas Luis Carlos Galán y de La Constitución
+850,4881907,2070823,2241,keep,Enlace Vehicular Avenidas Pablo VI y Bacatá
+648,4879231,2065478,14598,relocate,Enlace Vehicular Avenidas Caracas y Hortúa
+1169,4868590,2070017,19154,keep,Enlace Vehicular Avenida Primero de Mayo con Avenida Tintal
+1170,4881669,2077635,9486,keep,Enlace Vehicular Avenida Pepe Sierra con Avenida Cordoba
+1173,4879207,2066412,5824,keep,Enlace Vehicular Avenida Mariscal Sucre - Par Vial Occidental con Avenida de Los Comuneros
+1372,4873554,2073474,189727,relocate,Enlace Vehicular avenida Longitudinal der Occidente y Centenario
+649,4877260,2064073,4677,keep,Enlace Vehicular Avenidas Caracas y José Asunción Silva
+835,4878958,2083419,21731,keep,Enlace Avenida Ciudad de Cali  con Avenida de Las Mercedes
+838,4880572,2083928,25579,relocate,Enlace Vehicular  avenidas Cota y San José
+1316,4876266,2075498,6554,keep,Enlace Avenidas Ciudad de Cali y Pablo VI
+1454,4884612,2086905,32404,keep,Enlace Vehicular avenidas Paseo de Los Libertadores y Arrayanes
+1426,4872582,2069840,99423,relocate,Enlace Av. de Las Américas y Manuel Cepeda Vargas
+814,4882096,2071921,5644,keep,Enlace Vehicular avenidas Celestino Mutis y Bacatá
+719,4877676,2067644,7051,keep,Enlace Vehicular avenidas Cundinamarca y Comuneros
+1033,4875955,2064362,4828,keep,Enlace Vehicular avenidas Mariscal Sucre y Quiroga
+1034,4875209,2064115,7817,keep,Enlace Vehicular avenidas Mariscal Sucre y Santa Lucía
+1091,4885672,2090588,6915,keep,Enlace Vehicular avenidas Alberto Lleras Camargo y Calle 245
+1374,4872625,2073791,83018,keep,Enlace Vehicular avenidas Centenario y Fontibón
+985,4880925,2090558,3368,keep,Enlace Vehicular Avenida Guaymaral con Vía Borde Norte
+1092,4885690,2089794,11272,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y Guaymaral
+1093,4882717,2086315,63356,keep,Enlace Vehicular Avenidas Boyacá y El Polo
+1094,4882498,2085455,8080,keep,Enlace Vehicular avenidas Boyacá y Tibabita
+1129,4882591,2085136,10353,relocate,Enlace Vehicular Avenidas Boyacá y San Antonio
+1130,4885116,2084089,10590,keep,Enlace Vehicular Avenida San Antonioy Jorge Uribe Botero
+1029,4874417,2075240,2974,keep,Enlace Vehicular avenidas Las Esperanza - Luis carlos Galán y Fontibón
+1030,4872989,2076396,22654,relocate,Enlace Vehicular avenidas La Esperanza -  Luis Carlos Galán y Versalles
+650,4881980,2071983,22924,keep,Enlace Vehicular Avenida Caracas con Avenida José Celestino Mutis
+651,4881774,2070846,5518,keep,Enlace Vehicular Avenidas Caracas y Pablo VI
+652,4877758,2064320,9641,keep,Enlace Vehicular Avenidas caracas y Primero de Mayo
+594,4882006,2080550,6667,keep,Enlace Vehicular avenidas Camino del Prado - Sargento Inocencio Chincá y Villas
+595,4880660,2067351,5983,keep,Enlace Vehicular Avenidas Caracas y  Ciudad de Lima
+1324,4875738,2072508,130682,keep,Enlace Vehicular Avenida Boyacá con Avenida Ferrocarril de Occidente
+1191,4884873,2075201,12338,keep,Enlace Vehicular Avenidas Carlos Lleras Restrepo y Alberto lleras camargo
+1015,4876513,2073009,37359,keep,Enlace Vehicular Avenidas Luis Carlos Galán y de La Constitución
+714,4875890,2065149,97563,keep,"Enlace Vehicular Avenidas General Santander, Jorge Gaitán Cortes y Quiroga"
+715,4884014,2074908,3287,keep,Enlace Vehicular avenidas Germán Arciniegas y Calle 94
+716,4882188,2071950,1087,keep,Enlace Vehicular avenidas German Arciniegas y par vial norte Avenida José Celestino Mutis
+717,4885024,2076870,5107,keep,Enlace Vehicular Avenidas Germán Arciniegas y Pepe Sierra
+1117,4883822,2087264,13586,keep,Enlace Vehicular avenidas Las Villas y Los Arrayanes
+564,4873343,2064189,72529,relocate,Enlace Vehicular  avenidas Boyacá y Gaitán Cortés
+1112,4882006,2078403,33360,keep,Enlace Vehicular avenidas Rodrigo Lara Bonilla y Avenida Córdoba
+1424,4872007,2069941,35354,keep,"Enlace Vehicular Avenida de Las Américas, Avenida de Los Muiscas con Avenida Agoberto Mejia Cifuentes"
+702,4879143,2064424,9389,keep,Enlace Vehicular avenidas Fernando Mazuera y Fucha
+703,4878627,2063711,7612,keep,Enlace Vehicular avenidas Fernando Mazuera y Primero de Mayo
+499,4875707,2079814,41687,keep,Enlace Vehicular Avenidas Medellin y El Cortijo
+427,4881094,2069844,8824,keep,Enlace Vehicular Avenida Mariscal Sucre con Avenida Mariscal Sucre - Par Viales
+1383,4874083,2072981,85936,keep,Enlace Vehicular avenida Centenario y Ciudad de Cali
+1386,4874452,2072503,54245,relocate,Enlace Vehicular Avenida Centenario con Avenida Agoberto Mejia Cifuentes
+624,4876366,2078915,14651,keep,Enlace Vehicular Avenidas  Medellin y Bolivia
+1046,4885527,2078845,26022,keep,Enlace Vehicular  avenidas Contador y Laureano Gómez
+605,4886439,2080472,13476,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y Sirena
+946,4876884,2071384,12233,keep,Enlace Vehicular avenidas Ferrocarril de Occidente y Congreso Eucarístico
+724,4880065,2074257,9578,relocate,Enlace Vehicular avenidas de La Esmeralda y Gabriel Andrade Lleras
+725,4879303,2072949,20860,keep,Enlace Vehicular Avenidas de La Esmeralda y José Celestino Mutis
+726,4876854,2070177,7044,keep,Enlace Vehicular avenidas de La Esmeralda y Puente Aranda
+596,4876508,2056129,97756,keep,Enlace Vehicular Avenidas Caracas y Autopista al Llano
+711,4874619,2073651,56050,relocate,Enlace Vehicular avenidas Ferrocarril de Occidente yCiudad de Cali
+712,4880186,2067689,20166,keep,"Enlace Vehicular avenidas Ferrocarril de Occidente, Ciudad de Lima y Maríscal Sucre"
+923,4880297,2078655,97635,keep,Enlace Vehicular Avenida El Rincón con Avenida Boyacá
+924,4867885,2071387,128486,relocate,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida Primero de Mayo
+925,4865871,2070428,17246,keep,Enlace Vehicular Avenida Longitudinal de Occidente con Avenida San Bernardino
+723,4877172,2070547,6163,keep,Enlace Vehicular avenidas de la Esmeralda  e Industrial
+999,4874800,2067425,47698,keep,"Enlace Vehicular Avenidas del Congreso Eucarístico,  Ferrocarril del Sur y  Primero de Mayo"
+720,4876769,2066661,2154,keep,Enlace Vehicular avenidas Cundinamarca y Fucha
+1048,4883718,2081620,77284,keep,Enlace Vehicular  avenidas Sirena y Paseo Libertadores
+1050,4879483,2083188,5608,keep,Enlace Vehicular Avenida La Conejera con Avenida de Las Mercedes
+721,4879836,2069112,39105,keep,"Enlace Vehicular Avenidas de  Las Americas,  Ciudad de Quito y Teusaquillo"
+722,4877617,2073932,6614,keep,Enlace vehicular avenidas de La Constitución y Pablo VI
+1110,4872224,2068297,43014,keep,Enlace Vehicular Avenidas Primero de Mayoy Poporo Quimbaya
+1111,4875848,2071135,3678,keep,Enlace Vehicular Avenidas Puente Aranda y Constitución
+1053,4879837,2076365,26156,keep,Enlace Vehicular - avenidas Medellín y Constitución
+668,4873299,2072261,77785,keep,Enlace Vehicular Avenidas Ciudad de Cali y Guayacanes
+740,4880614,2066622,6219,keep,"Enlace Vehicular Avenida Fernando Mazuera, Avenida Jiménez y Avenida Colón"
+742,4880353,2066715,2468,keep,Enlace Vehicular Avenidas Jímenes y Bacatá
+508,4869046,2067413,47734,relocate,Enlace Vehicular Avenida Agoberto Mejia Cifuentes con Avenida Bosa
+510,4884505,2074598,5048,keep,Enlace Vehicular Avenida Alberto Lleras Camargo y Avenida Calle 94
+1077,4878957,2081123,22664,relocate,Enlace Vehicular Avenida Tabor con Avenida La Conejera
+1134,4881339,2078681,11665,relocate,Enlace Vehicular Avenida Rodrigo Lara Bonilla con Avenida de Las Villas
+1135,4885621,2082772,16939,keep,Enlace Vehicular Avenida San Juan Bosco con Avenida Laureano Gómez
+1136,4873446,2062264,4467,keep,Enlace Vehicular Avenida Tunjuelito con Avenida San Francisco
+1060,4882716,2075418,8349,keep,Enlace Vehicular Avenida Paseo de los Libertadores con Avenida Calle 94
+1080,4877980,2074229,13046,keep,Enlace Vehicular Avenida de La Constitución con Avenida José Celestino Mutis
+1081,4883472,2080010,11008,keep,Enlace Vehicular Avenidas Paseo de Los Libertadores y Camino del Prado
+1137,4882710,2083438,16372,review,Enlace Vehicular Avenida San José con Avenida de Las Villas
+1138,4886638,2082616,36335,relocate,Enlace Vehicular Avenida San Juan Bosco con Avenida Alberto Lleras Camargo
+848,4881981,2071232,1647,keep,Enlace Vehicular avenida de las Palmas y Bacatá
+1101,4872969,2065872,99998,keep,Enlace Vehicular Orejas Manzanas Avenida Boyacá con Avenida del Sur
+1126,4878065,2065225,11870,review,Enlace Vehicular avenidas Fucha y Mariscal Sucre
+853,4879151,2083861,11549,keep,Enlace Vehicular Avenida Ciudad de Cali con Avenida San José
+855,4879740,2083815,4023,keep,Enlace Vehicular Avenida de La Conejera y Avenida San José
+606,4884273,2074249,13854,review,"Enlace Vehicular Avenidas Alberto Lleras Camargo,  Alejandro Obregón y  de los Cerros"
+916,4883006,2070953,16182,keep,Enlace Vehicular avenidas de Los Cerros y par vial José Celestino Mutis
+917,4882285,2069780,8582,keep,Enlace Vehicular Avenidas de Los Cerros y Francisco Miranda
+918,4881620,2069978,3542,keep,Enlace Vehicular Avenidas Caracas y Francisco Miranda
+927,4869067,2071636,46078,keep,Enlace Vehicular avenidas Longitudinal de Occidente y Ciudad de Villavicencio
+928,4869635,2072133,21753,keep,Enlace Vehicular Avenidas Longitudinal de Occidente y de Los Muiscas
+930,4884373,2079243,14385,keep,Enlace Vehicular avenidas Contador y Jorge Uribe Botero
+1002,4882867,2089930,6564,keep,Enlace Vehicular vias Guaymaral y Secundaria del Norte
+1004,4881293,2087070,4166,keep,Enlace Vehicular vías Secundaria Rural  del Norte y Arrayanes
+1005,4880850,2089778,3370,keep,Enlace Vehicular Vía Borde Norte y Vía El Jardín
+598,4879713,2066058,15386,keep,Enlace Vehicular avenidas caracas y Comuneros
+599,4881848,2071256,3658,keep,Enlace Vehicular Avenidas Caracas y de Las Palmas
+600,4878626,2064798,9509,keep,Enlace Vehicular avenidas Caracas y Fucha
+601,4882257,2071148,2572,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y de Las Palmas
+602,4882526,2071746,2401,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y José Celestino Mutis
+879,4880384,2083808,7023,keep,Enlace Vehicular avenidas Cota y San José
+1054,4876093,2079287,13158,relocate,Enlace Vehicular avenidas Medellín y Gonzalo Ariza
+1056,4880923,2071003,2802,keep,Enlace Vehicular avenidas Pablo VI y Colombia
+1057,4881148,2070962,2620,keep,Enlace Vehicular avenidas Pablo VI y Colombia
+1058,4883906,2083178,124592,relocate,"Enlace Vehicular avenidas Paseo de Los Libertadores , San Juan Bosco y San José"
+1059,4882368,2073747,44314,keep,Enlace Vehicular Avenidas Paseo de los Libertadores Medellín y Caracas
+603,4882478,2071628,7739,keep,Enlace Vehicular Avenidas Alberto Lleras Camargo y José Celestino Mutis
+604,4886190,2084125,8134,relocate,Enlace Vehicular Avenidas Alberto Lleras Camargo y San Antonio
+894,4882208,2081146,17283,relocate,Enlace Vehicular Avenida Transversal de Suba con Avenida de Las Villas
+1095,4883916,2087729,3427,keep,Enlace Vehicular Avenida de Las Villas con Avenida Calle 215
+1096,4884018,2088450,3597,keep,Enlace Vehicular avenidas El Jardín y de las Villas
+1099,4877409,2076973,84313,relocate,Enlace Vehicular  Avenidas Ciudad de Cali y Chile
+607,4883903,2073451,35486,keep,"Enlace Vehicular Avenidas Alberto Lleras Camargo, José María Escriva de Balaguer y de Los Cerros"
+608,4883804,2074515,4525,keep,Enlace Vehicular Avenidas Alejandro Obregón y German Arciniegas  par vial occidental
+609,4883322,2074769,2876,keep,Enlace Vehicular avenidas Alejandro Obregón y Germán Arciniegas(par vial del Country)
+911,4879504,2077022,8591,keep,Enlace Vehicular Avenidas Boyacá y Morisca
+912,4880120,2077601,11983,keep,Enlace Vehicular Avenida Boyacá con Avenida Pepe Sierra
+919,4877513,2081635,32448,keep,Enlace Vehicular Avenidas Longitudinal de Occidente y El Tabor
+920,4875897,2082965,10896,keep,Enlace vehicular Avenidas  Tabor y Transversal de Suba
+994,4882811,2075976,84713,keep,Enlace Vehicular Avenida Paseo de Los Libertadores con Avenida Carlos Lleras Restrepo
+995,4878083,2072765,70448,keep,Enlace Vehicular avenidas Congreso Eucarístico y Pablo VI
+1456,4884481,2086166,144409,keep,Enlace Vehicular avenidas Paseo de Los Libertadores y Polo
+1448,4885290,2090717,17931,keep,"Enlace Vehicular Avenidas Paseo de Los Libertadores, Laureano Gómez  y Calle 245"
+1430,4866432,2069160,10133,relocate,Enlace Vehicular Avs. Tintal y San Beernardino
+1436,4885689,2086025,77696,keep,Enlace Vehicular avenidas El Polo y Laureano Gómez
+1438,4885440,2086051,5766,keep,Enlace Vehicular avenidas El Polo y Jorge Uribe Botero
+1440,4885008,2086055,31306,keep,Enlace Vehicular Avenidas El Polo y Santa Barbara
+1434,4886202,2085914,18581,keep,Enlace Vehicular avenidas El Polo y Alberto Lleras Camargo
+1220,4874042,2070509,18361,keep,Enlace Vehicular Avenidas Boyacá y Castilla
+1446,4874501,2071338,91049,keep,Enlace Vehicular Avenidas Guayacanes y Boyacá
