@@ -16,5 +16,6 @@ ADRs are immutable once accepted. To change a decision, write a new ADR that sup
 | [0008](0008-arterial-axes-as-guide.md) | SDP arterial axes as the geometry of built arterials inside Bogotá | Accepted; shelved for v1 by 0010 | 2026-11-22 |
 | [0009](0009-analysis-graph-and-measures.md) | Segment (dual) graph, simplest-path closeness and betweenness | Accepted | 2026-11-22 |
 | [0010](0010-v1-mvi-only.md) | v1 network is MVI only; the stitched network is shelved | Accepted | 2026-11-22 |
+| [0011](0011-density-farness-hillier.md) | Add angular density, farness and Hillier integration | Accepted | 2026-11-23 |
 
 New ADRs copy [template.md](template.md) and take the next number.

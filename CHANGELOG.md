@@ -24,3 +24,5 @@ All notable changes to this project are recorded here. Each release covers data,
 - ADR-0010: v1 network is MVI only. `bogota-syntax network` builds it by default (`network.mode: mvi_only`) with `boundary_dist_m` per segment; the stitched pipeline (ADR-0007, ADR-0008) is shelved, its lessons recorded in the ADR.
 - `bogota-syntax network` collapses segments shorter than 0.5 m (`min_segment_m`) so cityseer's graph matches the network one-to-one.
 - `bogota-syntax centrality`: pilot run of simplest-path closeness (`cc_harmonic_<d>_ang`) and betweenness (`cc_betweenness_<d>_ang`) at six distances on the dual graph, cityseer's own cleaning off; `data/processed/centrality_pilot.parquet`. Adds cityseer (AGPL-3.0, ADR-0001).
+- `bogota-syntax centrality --area city`: the whole city, live inside the SDP urban perimeter; `data/processed/centrality_city.parquet` (local only, not published).
+- ADR-0011: angular density, farness and Hillier integration added to harmonic closeness and betweenness; expressions in `config/analysis.yaml` (`centrality:`).

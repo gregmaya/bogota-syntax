@@ -18,14 +18,17 @@ def run_centrality(
     segments: gpd.GeoDataFrame,
     live: shapely.Geometry,
     distances: list[int],
+    measures: dict[str, dict[str, str]] | None = None,
 ) -> gpd.GeoDataFrame:
     """Closeness and betweenness by simplest (angular) path at `distances`.
 
     `segments` is the finished network (one row per intersection-to-intersection segment,
     with `segment_id`). Segments whose midpoint lies in `live` are reported; the rest are
     routed through only (ADR-0004). cityseer's own cleaning is switched off, so its graph
-    has exactly these segments. Returns one row per segment with cityseer's columns
-    (`live`, `cc_harmonic_<d>_ang`, `cc_betweenness_<d>_ang`) joined to `segments`.
+    has exactly these segments. `measures` holds cityseer's `closeness`, `betweenness` and
+    `postprocess` expression dicts (config/analysis.yaml `centrality:`); None keeps
+    cityseer's CityNetwork defaults (harmonic and betweenness only). Returns one row per
+    segment with `live` and the `cc_<name>_<d>_ang` columns joined to `segments`.
     """
     from cityseer.network import CityNetwork
 
@@ -39,7 +42,7 @@ def run_centrality(
         merge_parallel_dist=0,
         segment_weighted=False,
     )
-    cn.centrality_simplest(distances=distances)
+    cn.centrality_simplest(distances=distances, **(measures or {}))
     res = cn.to_geopandas().drop(columns="geometry")
     if len(res) != len(segments) or not res["segment_id"].is_unique:
         raise RuntimeError(
@@ -50,27 +53,37 @@ def run_centrality(
     return segments.merge(res[keep], on="segment_id", how="left", validate="1:1")
 
 
-def run(root) -> dict[str, Any]:
-    """Pilot run: the network within the pilot network extent, live in the live area.
+def run(root, area: str = "pilot") -> dict[str, Any]:
+    """Run centrality on the finished network (data/processed/network.parquet).
 
-    Reads data/processed/network.parquet and data/interim/extent/; writes
-    data/processed/centrality_pilot.parquet.
+    - `pilot`: segments within the pilot network extent, live in the pilot live area
+      (ADR-0004).
+    - `city`: every segment, live inside the SDP urban perimeter; the rest of the network
+      (inside Bogotá, up to the stitch margin beyond the perimeter) is the dead buffer.
+
+    Writes data/processed/centrality_<area>.parquet.
     """
     from bogota_syntax.config import data_dir, load_analysis
 
     analysis = load_analysis(root)
     data = data_dir(root)
-    ext = data / "interim" / "extent"
-    network_extent = shapely.union_all(
-        gpd.read_parquet(ext / "network_extent.parquet").geometry.values
-    )
-    live = shapely.union_all(gpd.read_parquet(ext / "live_area.parquet").geometry.values)
     segments = gpd.read_parquet(data / "processed" / "network.parquet")
-    segments = segments[segments.intersects(network_extent)].reset_index(drop=True)
+    if area == "pilot":
+        ext = data / "interim" / "extent"
+        network_extent = shapely.union_all(
+            gpd.read_parquet(ext / "network_extent.parquet").geometry.values
+        )
+        live = shapely.union_all(gpd.read_parquet(ext / "live_area.parquet").geometry.values)
+        segments = segments[segments.intersects(network_extent)].reset_index(drop=True)
+    elif area == "city":
+        urban = data / "interim" / f"{analysis['stitch']['urban_source']}.parquet"
+        live = shapely.union_all(gpd.read_parquet(urban).to_crs(CRS).geometry.values)
+    else:
+        raise ValueError(f"area must be pilot or city, not {area!r}")
     t0 = time.time()
-    out = run_centrality(segments, live, analysis["distances"])
+    out = run_centrality(segments, live, analysis["distances"], analysis["centrality"])
     seconds = time.time() - t0
-    path = data / "processed" / "centrality_pilot.parquet"
+    path = data / "processed" / f"centrality_{area}.parquet"
     out.to_parquet(path)
     return {
         "segments": len(out),

@@ -131,4 +131,17 @@ network:
   # 2026-11-22); cityseer would drop them and break the one-to-one match (ADR-0009).
   min_segment_m: 0.5
 
+# Simplest-path (angular) measures, passed to cityseer's centrality_simplest
+# (ADR-0009, ADR-0011). Expressions use c, the angular cost (degrees of turning on the
+# simplest route); they are cityseer 5.8's own defaults for these names.
+centrality:
+  closeness:
+    density: "1"                    # segments reachable within the distance
+    farness: "1 + c / 90"           # angular total depth
+    harmonic: "1 / (1 + c / 90)"    # angular harmonic closeness
+  betweenness:
+    betweenness: "1"                # angular choice
+  postprocess:
+    hillier: "density**2 / farness" # Hillier's normalised integration
+
 # No scenarios in v1 (ADR-0003): one network, MVI inside Bogotá + OSM outside.

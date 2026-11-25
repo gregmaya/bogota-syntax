@@ -151,11 +151,17 @@ def network() -> None:
 
 
 @app.command()
-def centrality() -> None:
-    """Pilot: simplest-path closeness and betweenness (ADR-0009) -> data/processed/."""
+def centrality(
+    area: Annotated[
+        str, typer.Option(help="pilot (ADR-0004) or city (urban perimeter).")
+    ] = "pilot",
+) -> None:
+    """Simplest-path closeness and betweenness (ADR-0009) -> data/processed/centrality_<area>."""
     from bogota_syntax.centrality import run
 
-    s = run(project_root())
+    if area not in ("pilot", "city"):
+        raise typer.BadParameter("area must be pilot or city")
+    s = run(project_root(), area)
     typer.echo(
         f"  {s['segments']:,} segments ({s['live']:,} live), {s['km']:,.0f} km, "
         f"{s['seconds']:.0f} s"

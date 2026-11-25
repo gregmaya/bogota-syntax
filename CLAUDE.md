@@ -7,7 +7,7 @@ Decisions live in `docs/decisions/` as ADRs. Read them before changing anything 
 ## Current status
 
 - Phase: **0, setup** (update this line when a phase closes).
-- ADRs 0001–0010 Accepted (0007 and 0008 shelved for v1 by 0010). Not decided yet: orchestration.
+- ADRs 0001–0011 Accepted (0007 and 0008 shelved for v1 by 0010). Not decided yet: orchestration.
 - Distances: 400, 800, 1200, 1600, 2000 and 5000 m (`config/analysis.yaml`).
 - Pilot: the 36 RENOBO polygons in `data/renobo_selection.gpkg` are drawn as dotted outlines. The live area is those polygons + 5 km, and the network is the live area + a 5 km dead buffer (ADR-0004).
 - **v1 is MVI only (ADR-0010):** cleaned by neatnet, clipped to Bogotá, dead ends extended within 10 m, merged into intersection-to-intersection segments (`network.mode: mvi_only`). No OSM, no SDP axes. Each segment has `boundary_dist_m` because the network stops at the city limit (edge effect). The stitched pipeline (ADR-0007/0008: `arterials`, `join`, `network.mode: stitched`) is shelved, not deleted; ADR-0010 lists what it needs. Analysis is simplest-path closeness and betweenness on the dual (segment) graph, undirected and unweighted, islands kept and flagged (ADR-0009). The pilot centrality run works (`centrality`); next: publishing (PMTiles, etapas).
@@ -37,7 +37,7 @@ uv run bogota-syntax clean [mvi|osm]     # neatnet per side, with piece checks (
 uv run bogota-syntax arterials           # shelved for v1: SDP axes replace MVI arterials (ADR-0008)
 uv run bogota-syntax join                # shelved for v1: OSM + MVI at the boundary (ADR-0007)
 uv run bogota-syntax network             # v1: MVI-only segments -> data/processed/network.parquet (~4 min)
-uv run bogota-syntax centrality          # pilot: simplest-path closeness + betweenness -> data/processed/centrality_pilot.parquet (~4 min)
+uv run bogota-syntax centrality [--area city]  # density, farness, harmonic, Hillier, betweenness (ADR-0009/0011) -> data/processed/centrality_<area>.parquet (~4 min)
 uv run pytest
 uv run ruff check . && uv run ruff format .
 ```
