@@ -90,7 +90,9 @@ From `bogota-syntax foreground` on 2026-11-25, Eje Vial as ingested on 2026-11-2
 | 12. Manual edits | 46 lines removed, 36 added (4.4 km redrawn); 0 stale | |
 | Final | 1,016 segments, 1,074.3 km, 2 connected pieces, 0 crossings without a shared point | 4 / 13 / 15 |
 
-The 4 `critical` dead ends left are review cases; a fifth, inside the Congreso Eucarístico / Ciudad Montes / Constitución interchange, goes when that interchange is relocated (a decision Gregorio labelled right). 36 interchanges were flagged for review: 14 labelled `review` that hold a junction, and 22 without a decision. Gregorio reviewed them on 2026-11-25 and fixed by hand the ones that needed it (step 12); the output reproduces his edited network exactly, geometry for geometry. Gregorio checked them in QGIS and accepted them as open: missing road segments in the source data, and corridors whose polygons carry on past where Eje Vial stops. The second connected piece is a single isolated line, left for the background network to reach.
+The 4 `critical` dead ends left are review cases. Gregorio checked them in QGIS and accepted them as open: missing road segments in the source data, and corridors whose polygons carry on past where Eje Vial stops. A fifth, inside the Congreso Eucarístico / Ciudad Montes / Constitución interchange, goes when that interchange is relocated (a decision Gregorio labelled right). The second connected piece is a single isolated line, left for the background network to reach.
+
+36 interchanges were flagged for review: 14 labelled `review` that hold a junction, and 22 without a decision. Gregorio reviewed them on 2026-11-25 and fixed by hand the ones that needed it (step 12); the output reproduces his edited network exactly, geometry for geometry.
 
 ## Alternatives considered
 

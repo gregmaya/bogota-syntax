@@ -2,7 +2,7 @@
 
 Open, reproducible street-network centrality for Bogotá D.C., published as PMTiles for the Bogotá viewer.
 
-Decisions live in `docs/decisions/` as ADRs. Read them before changing anything structural.
+Decisions live in `docs/decisions/` as ADRs. Read them before changing anything structural. Briefs for work not started yet live in `docs/briefs/`.
 
 ## Current status
 
