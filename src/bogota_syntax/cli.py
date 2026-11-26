@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Annotated
 
 import typer
@@ -203,16 +204,33 @@ def centrality(
     area: Annotated[
         str, typer.Option(help="pilot (ADR-0004) or city (urban perimeter).")
     ] = "pilot",
+    network: Annotated[
+        str,
+        typer.Option(help="Network version: v1 (network.parquet) or vN (network_vN.parquet)."),
+    ] = "v1",
 ) -> None:
-    """Simplest-path closeness and betweenness (ADR-0009) -> data/processed/centrality_<area>."""
+    """Simplest-path closeness and betweenness (ADR-0009) -> centrality_<area>[_vN].parquet."""
     from bogota_syntax.centrality import run
 
     if area not in ("pilot", "city"):
         raise typer.BadParameter("area must be pilot or city")
-    s = run(project_root(), area)
+    if not re.fullmatch(r"v\d+(\.\d+)?", network):
+        raise typer.BadParameter("network must look like v1, v2 or v2.1")
+    s = run(project_root(), area, network)
     typer.echo(
         f"  {s['segments']:,} segments ({s['live']:,} live), {s['km']:,.0f} km, "
         f"{s['seconds']:.0f} s"
     )
     typer.echo(f"  columns: {', '.join(s['columns'])}")
     typer.echo(f"  -> {s['path'].relative_to(project_root())}")
+
+
+@app.command()
+def publish() -> None:
+    """PMTiles + etapas.json for bogota-atlas (config/etapas.yaml) -> data/processed/etapas/."""
+    from bogota_syntax.publish import run
+
+    s = run(project_root())
+    for name, size in s["bytes"].items():
+        typer.echo(f"  {name}: {size / 1e6:.1f} MB")
+    typer.echo(f"  {s['layers']} layers -> {s['out_dir']}/etapas.json")

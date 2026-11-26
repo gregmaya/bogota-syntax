@@ -74,6 +74,18 @@ sources:
     # (ADR-0012). Arrives in PCS_CarMAGBOG. Licence checked against ODbL: CC BY 4.0,
     # attribution only, as for sdp_eje_vial.
 
+  uaecd_lote:
+    title: Lote (cadastral lots), corte 2026-10
+    publisher: Unidad Administrativa Especial de Catastro Distrital (UAECD)
+    licence: CC-BY-4.0
+    ckan_dataset: lote
+    kind: file
+    url: https://datosabiertos.bogota.gov.co/dataset/f615a894-3460-4a86-ae9e-fa6e6bf35e77/resource/fee30a3a-81da-4f04-9af8-7cd4067276e7/download/lote.shp.10.26.zip
+    # Ingest not run here yet: network v2 read bogota-pop's interim copy of this cut
+    # (vigencia 2026-10). Lots with LOTDISTRIT = 0 are private; merged by MANZCODIGO and
+    # shrunk 1 m they are the blocks neatnet must not collapse (network v2). Licence checked
+    # against ODbL: CC BY 4.0, attribution only.
+
   osm_vias:
     title: OpenStreetMap streets
     publisher: OpenStreetMap contributors

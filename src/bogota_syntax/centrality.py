@@ -53,21 +53,24 @@ def run_centrality(
     return segments.merge(res[keep], on="segment_id", how="left", validate="1:1")
 
 
-def run(root, area: str = "pilot") -> dict[str, Any]:
-    """Run centrality on the finished network (data/processed/network.parquet).
+def run(root, area: str = "pilot", network: str = "v1") -> dict[str, Any]:
+    """Run centrality on a finished network version.
+
+    - `network`: `v1` reads data/processed/network.parquet and writes
+      centrality_<area>.parquet (as before); any other version `vN` (or `vN.M` after manual
+      edits) reads network_vN.parquet and writes centrality_<area>_vN.parquet.
 
     - `pilot`: segments within the pilot network extent, live in the pilot live area
       (ADR-0004).
     - `city`: every segment, live inside the SDP urban perimeter; the rest of the network
       (inside Bogotá, up to the stitch margin beyond the perimeter) is the dead buffer.
-
-    Writes data/processed/centrality_<area>.parquet.
     """
     from bogota_syntax.config import data_dir, load_analysis
 
     analysis = load_analysis(root)
     data = data_dir(root)
-    segments = gpd.read_parquet(data / "processed" / "network.parquet")
+    suffix = "" if network == "v1" else f"_{network}"
+    segments = gpd.read_parquet(data / "processed" / f"network{suffix}.parquet")
     if area == "pilot":
         ext = data / "interim" / "extent"
         network_extent = shapely.union_all(
@@ -83,7 +86,7 @@ def run(root, area: str = "pilot") -> dict[str, Any]:
     t0 = time.time()
     out = run_centrality(segments, live, analysis["distances"], analysis["centrality"])
     seconds = time.time() - t0
-    path = data / "processed" / f"centrality_{area}.parquet"
+    path = data / "processed" / f"centrality_{area}{suffix}.parquet"
     out.to_parquet(path)
     return {
         "segments": len(out),

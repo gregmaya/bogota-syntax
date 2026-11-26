@@ -31,6 +31,7 @@ ORDER = [
     "sdp_eje_vial",
     "sdp_red_infraestructura_vial",
     "osm_vias",
+    "uaecd_lote",
 ]
 EXTENT_INPUTS = ["renobo_proyectos", "ideca_limite_bogota", "sdp_perimetro_urbano"]
 
