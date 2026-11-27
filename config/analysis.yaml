@@ -186,6 +186,22 @@ foreground:
   edits: config/foreground_edits.geojson
   edits_match_m: 0.01       # a removal matches a line within this Hausdorff distance
 
+# Spanish package for the SDP (docs/briefs/sdp-eje-vial-package-design.md, ADR-0013):
+# the foreground's problems and fixes, keyed to the published Eje Vial features.
+sdp_package:
+  key_m: 1               # a row takes the keys of the nearest Eje Vial feature within this
+  end_match_m: 0.01      # a dead end and a correction line's end are the same point within this
+  round_trip_max_m: 0.01 # EPSG:9377 -> PCS_CarMAGBOG -> EPSG:9377 may shift a point this much
+  figure_window_m: 100   # half-width of a before / after panel
+  contacto: null         # name and email for LEEME.txt, filled in by Gregorio before sending
+  examples:              # OBJECTID (CODIGO_ID for reubicacion_enlace) per figure; null = automatic
+    extremo_suelto: null
+    cruce_sin_nodo: null
+    discontinuidad: null
+    tramo_corto: null
+    abierto: null
+    reubicacion_enlace: null
+
 # Simplest-path (angular) measures, passed to cityseer's centrality_simplest
 # (ADR-0009, ADR-0011). Expressions use c, the angular cost (degrees of turning on the
 # simplest route); they are cityseer 5.8's own defaults for these names.
