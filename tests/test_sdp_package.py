@@ -530,3 +530,11 @@ def test_gpkg_carries_a_default_qgis_style_per_layer(tmp_path) -> None:
     assert sorted(r[0] for r in rows) == sorted(sp.LAYERS)
     assert all(r[1] and r[2] == 1 and r[3].startswith("<!DOCTYPE qgis") for r in rows)
     assert registered == ("attributes",)
+
+
+def test_contact_comes_from_an_ignored_local_file(tmp_path) -> None:
+    (tmp_path / "config").mkdir()
+    assert sp.contacto(tmp_path, {"contacto": None}) is None
+    (tmp_path / "config" / "contacto.local.txt").write_text("Ana, ana@x.org\n", encoding="utf-8")
+    assert sp.contacto(tmp_path, {"contacto": None}) == "Ana, ana@x.org"
+    assert sp.contacto(tmp_path, {"contacto": "B"}) == "B"  # config wins when set

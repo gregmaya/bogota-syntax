@@ -544,6 +544,21 @@ def embed_styles(path: Path, styles: Path = STYLES) -> None:
             )
 
 
+CONTACT_FILE = Path("config") / "contacto.local.txt"
+
+
+def contacto(root: Path, cfg: dict[str, Any]) -> str | None:
+    """Contact for LEEME.txt: `sdp_package.contacto` if set, else the first line of
+    config/contacto.local.txt (git-ignored, so a personal email stays out of the
+    public repository), else None."""
+    if cfg.get("contacto"):
+        return cfg["contacto"]
+    path = root / CONTACT_FILE
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip().splitlines()[0] or None
+    return None
+
+
 def check_fresh(review: Path, inputs: list[Path]) -> None:
     """Stop if the foreground review layers are older than any input they come from."""
     if not review.exists():
@@ -564,6 +579,7 @@ def run(root: Path) -> dict[str, Any]:
 
     analysis = load_analysis(root)
     cfg, fg = analysis["sdp_package"], analysis["foreground"]
+    cfg = cfg | {"contacto": contacto(root, cfg)}
     data = data_dir(root)
     review = data / "interim" / "foreground" / "review.gpkg"
     axes_path = data / "interim" / f"{fg['axes_source']}.parquet"

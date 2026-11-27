@@ -196,7 +196,7 @@ sdp_package:
   limit_m: 5             # a problem this close to the Bogotá limit ends there, not a missing segment
   figure_window_m: 100   # half-width of a before / after panel
   figure_window_small_m: 15  # the same for loose ends and stubs, a few metres long
-  contacto: null         # name and email for LEEME.txt, filled in by Gregorio before sending
+  contacto: null         # LEEME.txt contact; null = first line of config/contacto.local.txt (git-ignored)
   repo_url: https://github.com/gregmaya/bogota-syntax  # the note links to the code here, at the commit that ran
   examples:              # OBJECTID (CODIGO_ID for reubicacion_enlace) per figure; null = automatic
     extremo_suelto: null
