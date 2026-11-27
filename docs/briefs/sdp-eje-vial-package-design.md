@@ -98,3 +98,12 @@ The exact `match_m`; the order and styling of the layers (a QGIS `.qml` per laye
 ## Before anything is sent
 
 Gregorio reviews the package in QGIS and reads the note. Sending it is his call.
+
+## Revision, 2026-11-27 (Gregorio's review of the first PDF)
+
+- **The corrected network is delivered**, as layer `eje_vial_corregido`, first in the GeoPackage. It comes from an errors-only run of the foreground cleaning (`foreground.clean(..., errors_only=True)`), made by the package command itself: snaps, stub and duplicate removal, pairs, extensions and connectors only. No junction merging, no simplification, no interchange relocation, no manual edits.
+- **Crossings are not split** in that network, since some are bridges. They stay in `problemas` as `estado = sin_cambio` with an `observacion`; the analysis network still splits them.
+- **Modelling decisions stay in the package for transparency**, stated as not suggested for the Eje Vial: the analysis aims at a routable spatial (not road) continuity.
+- Open dead ends inside an interchange polygon are noted as such: the analysis fixes them with a modelling decision, the corrected network leaves them open.
+- Step 3 (stubs) now runs again after step 8 (ADR-0012): an extension on Avenida Usminia had left a 12.4 m stub.
+- The note: first person singular (Gregorio to the SDP); figure 1 framed on the urban area; the method's principle in bold; a "Preguntas para la SDP" section; a "Código utilizado" section listing each file with a link to the repository at the commit that ran (`sdp_package.repo_url`). The command warns when the linked files differ from that commit.

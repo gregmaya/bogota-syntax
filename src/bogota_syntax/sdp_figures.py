@@ -36,7 +36,7 @@ TYPE_COLOURS = {
 }
 TYPE_LABELS = {
     "extremo_suelto": "Extremo suelto",
-    "cruce_sin_nodo": "Cruce sin nodo",
+    "cruce_sin_nodo": "Cruce sin nodo (posible puente)",
     "tramo_corto": "Tramo corto o duplicado",
     "tramo_duplicado": "Tramo corto o duplicado",
     "discontinuidad": "Discontinuidad del corredor",
@@ -122,13 +122,15 @@ def _save(fig, path: Path) -> Path:
 
 
 def overview(package: dict[str, gpd.GeoDataFrame], axes: gpd.GeoDataFrame, path: Path) -> Path:
-    """Figure 1: the whole city, Eje Vial in grey, problems by type, open cases ringed."""
+    """Figure 1: the urban area (where the problems are), Eje Vial in grey, problems by
+    type, open cases ringed. The frame is the 2nd-98th percentile of the problems plus
+    a margin, so the rural south (Sumapaz) doesn't shrink the city."""
     pr = package["problemas"]
-    fig, ax = plt.subplots(figsize=(WIDTH_IN, WIDTH_IN * 1.1))
+    fig, ax = plt.subplots(figsize=(WIDTH_IN, WIDTH_IN * 0.95))
     axes.plot(ax=ax, color="#c8c8c8", lw=0.5)
     done = set()
     for t, colour in TYPE_COLOURS.items():
-        rows = pr[(pr["tipo"] == t) & (pr["estado"] == "corregido")]
+        rows = pr[(pr["tipo"] == t) & (pr["estado"] != "abierto")]
         label = TYPE_LABELS[t]
         if len(rows):
             ax.scatter(
@@ -152,10 +154,16 @@ def overview(package: dict[str, gpd.GeoDataFrame], axes: gpd.GeoDataFrame, path:
             zorder=4,
             label="Abierto (requiere revisión de la SDP)",
         )
+    if len(pr):
+        x, y = pr.geometry.x, pr.geometry.y
+        (x0, x1), (y0, y1) = x.quantile([0.02, 0.98]), y.quantile([0.02, 0.98])
+        pad = 0.08 * max(x1 - x0, y1 - y0)
+        ax.set_xlim(x0 - pad, x1 + pad)
+        ax.set_ylim(y0 - pad, y1 + pad)
     ax.set_aspect("equal")
     ax.set_axis_off()
-    ax.legend(loc="upper left", bbox_to_anchor=(1.0, 0.75), fontsize=8, frameon=False)
-    _scalebar(ax, (ax.get_xlim()[1] - ax.get_xlim()[0]) / 2, at=(0.6, 0.45))
+    ax.legend(loc="upper left", bbox_to_anchor=(1.0, 0.9), fontsize=8, frameon=False)
+    _scalebar(ax, (ax.get_xlim()[1] - ax.get_xlim()[0]) / 2, at=(0.72, 0.04))
     return _save(fig, path)
 
 
@@ -222,10 +230,13 @@ def make_figures(
     polygons: gpd.GeoDataFrame,
     cfg: dict[str, Any],
     out_dir: Path,
+    analysis_network: gpd.GeoDataFrame | None = None,
 ) -> dict[str, dict[str, Any] | None]:
     """Figures 1-7 as PNG in `out_dir`, without captions (the note carries them). Each
-    is {"path", "caption"}, or None when the
-    package has no case of that type. Examples come from `cfg["examples"]`."""
+    is {"path", "caption"}, or None when the package has no case of that type.
+    `network` is the corrected Eje Vial (errors only); figure 7 shows
+    `analysis_network`, the network with modelling decisions (defaults to `network`).
+    Examples come from `cfg["examples"]`."""
     pr, co, de = package["problemas"], package["correcciones"], package["decisiones_modelado"]
     ex = cfg.get("examples") or {}
     w = cfg["figure_window_m"]
@@ -285,16 +296,17 @@ def make_figures(
         ),
         window=ws,
     )
-    case(
-        "fig3",
-        "cruce_sin_nodo",
-        pr[pr["tipo"] == "cruce_sin_nodo"],
-        lambda r: (
-            f"Figura 3. Cruce sin nodo{_who(r)}: dos líneas se cruzan sin compartir un "
-            "punto. Se dividen en el cruce. Ojo: puede ser un puente."
-        ),
-        highlight=lambda f: gpd.GeoDataFrame(geometry=[f], crs=axes.crs),
-    )
+    row = pick_example(pr[pr["tipo"] == "cruce_sin_nodo"], ex.get("cruce_sin_nodo"), "OBJECTID")
+    if row is None:
+        out["fig3"] = None
+    else:
+        text = (
+            f"Figura 3. Cruce sin nodo{_who(row)}: dos líneas se cruzan sin compartir un "
+            "punto. Puede ser un puente o un deprimido, así que en la red corregida lo dejo "
+            "como está. En mi análisis de red sí lo divido."
+        )
+        path = single(row.geometry, network, polygons, out_dir / "figura_3_cruce_sin_nodo.png", w)
+        out["fig3"] = {"path": path, "caption": text}
     disc = pr[(pr["tipo"] == "discontinuidad") & pr["correccion"].isin(["extension", "conector"])]
     disc = kept(disc, ["extension", "conector"])
     case(
@@ -344,12 +356,14 @@ def make_figures(
         out["fig7"] = None
     else:
         f = row.geometry
-        moved = network[network["sources"].astype(str).str.contains("relocated")]
+        anet = analysis_network if analysis_network is not None else network
+        moved = anet[anet["sources"].astype(str).str.contains("relocated")]
         text = (
-            f"Figura 7. Decisión de modelado, no un error ({row['NOMBRE']}): las vías que "
-            "entran al enlace se llevan a un solo punto de encuentro, para el análisis de red."
+            f"Figura 7. Decisión de modelado, no un error ({row['NOMBRE']}): en mi análisis "
+            "de red llevo las vías que entran al enlace a un solo punto de encuentro. No está "
+            "en la red corregida y no sugiero añadirlo al Eje Vial."
         )
         path = out_dir / "figura_7_reubicacion_enlace.png"
-        before_after(f, axes, network, polygons, near(moved, f, 2.5 * w), path, 2.5 * w)
+        before_after(f, axes, anet, polygons, near(moved, f, 2.5 * w), path, 2.5 * w)
         out["fig7"] = {"path": path, "caption": text}
     return out

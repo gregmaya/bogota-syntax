@@ -21,7 +21,25 @@ import pyogrio
 import shapely
 
 KEYS = ["OBJECTID", "CODIGO_ID", "NOMBRE"]
-LAYERS = ["problemas", "correcciones", "decisiones_modelado", "ediciones_manuales"]
+LAYERS = [
+    "eje_vial_corregido",
+    "problemas",
+    "correcciones",
+    "decisiones_modelado",
+    "ediciones_manuales",
+]
+BRIDGE = "posible puente: se deja como está; en mi análisis de red sí se divide"
+LIMIT = "termina en el límite del Distrito"
+ENLACE = (
+    "dentro de un enlace vial: en mi análisis de red se resolvió con una decisión de "
+    "modelado (enlace reubicado o edición manual)"
+)
+ORIGIN = {
+    "original": "original",
+    "pair": "union",
+    "extension": "extension",
+    "connector": "conector",
+}
 TIPOS = [
     "extremo_suelto",
     "cruce_sin_nodo",
@@ -118,6 +136,7 @@ PROBLEM_COLS = [
     "longitud_m",
     *KEYS,
     "OBJECTID_2",
+    "observacion",
 ]
 FIX_COLS = ["tipo", "longitud_m", *KEYS]
 # review.gpkg layer -> correccion label, for the lines that fix a problem
@@ -192,7 +211,9 @@ def build_problemas(
     s, c, r = layers["snaps"], layers["crossings"], layers["removed"]
     out = [
         rows(s, "extremo_suelto", "start", correccion="ajuste", distancia_m=s.get("snap_m")),
-        rows(c, "cruce_sin_nodo", second=True, correccion="division"),
+        rows(
+            c, "cruce_sin_nodo", second=True, correccion="", estado="sin_cambio", observacion=BRIDGE
+        ),
     ]
     for why, tipo in (("stub", "tramo_corto"), ("duplicate", "tramo_duplicado")):
         rr = r[r["why"] == why]
@@ -230,6 +251,7 @@ def build_problemas(
     )
     pr = _frame(out, PROBLEM_COLS, crs)
     pr["correccion"] = pr["correccion"].fillna("")
+    pr["observacion"] = pr["observacion"].fillna("")
     pr = pr.assign(_o=(pr["estado"] != "abierto").astype(int)).sort_values("_o", kind="stable")
     return pr.drop(columns="_o").reset_index(drop=True)
 
@@ -244,7 +266,42 @@ def mark_limit(pr: gpd.GeoDataFrame, limit: gpd.GeoDataFrame, limit_m: float) ->
         else shapely.union_all(limit.geometry.values)
     )
     at = shapely.distance(pr.geometry.values, edge) <= limit_m
-    return pr.assign(observacion=np.where(at, "termina en el límite del Distrito", ""))
+    old = pr["observacion"].fillna("") if "observacion" in pr else pd.Series("", index=pr.index)
+    new = [(f"{o}; {LIMIT}" if o else LIMIT) if a else o for o, a in zip(old, at, strict=True)]
+    return pr.assign(observacion=new)
+
+
+def mark_enlace(pr: gpd.GeoDataFrame, interchanges: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Note open dead ends lying inside an interchange polygon ("Enlace Vehicular"):
+    the analysis network fixes those with a modelling decision, the corrected Eje Vial
+    leaves them open."""
+    inside = np.zeros(len(pr), bool)
+    if len(interchanges) and len(pr):
+        hit = shapely.STRtree(interchanges.geometry.values).query(
+            pr.geometry.values, predicate="within"
+        )[0]
+        inside[hit] = True
+    inside &= (pr["estado"] == "abierto").to_numpy() & (pr["tipo"] == "discontinuidad").to_numpy()
+    old = pr["observacion"].fillna("")
+    new = [
+        (f"{o}; {ENLACE}" if o else ENLACE) if a else o for o, a in zip(old, inside, strict=True)
+    ]
+    return pr.assign(observacion=new)
+
+
+def build_corregida(network: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """The corrected Eje Vial for the SDP: the errors-only network (no modelling
+    decisions), segment by segment, with every Eje Vial field as published, `origen`
+    (what made the geometry, in Spanish) and `longitud_m`. EPSG:9377."""
+    out = network.drop(columns=["sources", "length_m", "source"], errors="ignore").copy()
+    out["origen"] = [
+        ", ".join(ORIGIN.get(x.strip(), x.strip()) for x in str(v).split(","))
+        for v in network["sources"]
+    ]
+    out["longitud_m"] = network.length.round(1).to_numpy()
+    if "OBJECTID" in out:
+        out["OBJECTID"] = pd.array(out["OBJECTID"].round(), dtype="Int64")
+    return out
 
 
 def build_correcciones(
@@ -345,15 +402,18 @@ def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
     for t in TIPOS:
         rows = pr[pr["tipo"] == t]
         n[f"n_{t}"] = len(rows)
-        n[f"n_{t}_abierto"] = int((rows["estado"] == "abierto").sum())
-        n[f"n_{t}_corregido"] = n[f"n_{t}"] - n[f"n_{t}_abierto"]
+        for st in ("abierto", "corregido", "sin_cambio"):
+            n[f"n_{t}_{st}"] = int((rows["estado"] == st).sum())
     n["n_problemas"] = len(pr)
-    n["n_abierto"] = int((pr["estado"] == "abierto").sum())
+    for st in ("abierto", "corregido", "sin_cambio"):
+        n[f"n_{st}"] = int((pr["estado"] == st).sum())
     n["n_sin_clave"] = int(pr["OBJECTID"].isna().sum())
-    lim = pr.get("observacion", pd.Series("", index=pr.index)).fillna("") != ""
+    obs = pr.get("observacion", pd.Series("", index=pr.index)).fillna("")
+    lim, enl = obs.str.contains(LIMIT, regex=False), obs.str.contains(ENLACE, regex=False)
     open_gap = (pr["estado"] == "abierto") & (pr["tipo"] == "discontinuidad")
     n["n_abierto_limite"] = int((open_gap & lim).sum())
-    n["n_abierto_faltante"] = int((open_gap & ~lim).sum())
+    n["n_abierto_enlace"] = int((open_gap & enl & ~lim).sum())
+    n["n_abierto_faltante"] = int((open_gap & ~lim & ~enl).sum())
     for c in ("union", "extension", "conector", "reubicacion_o_edicion"):
         n[f"n_discontinuidad_{c}"] = int(
             ((pr["tipo"] == "discontinuidad") & (pr["correccion"] == c)).sum()
@@ -390,6 +450,8 @@ SCHEMAS: dict[str, tuple[str, dict[str, str]]] = {
             "observacion": _TEXT,
         },
     ),
+    # every published Eje Vial field is kept as it comes; these two are added
+    "eje_vial_corregido": ("LineString", {"origen": _TEXT, "longitud_m": _NUM}),
     "correcciones": (
         "LineString",
         {"tipo": _TEXT, "longitud_m": _NUM, "OBJECTID": _INT, "CODIGO_ID": _TEXT, "NOMBRE": _TEXT},
@@ -420,7 +482,10 @@ def write_gpkg(package: dict[str, gpd.GeoDataFrame], path: Path, crs_wkt: str) -
         geom, types = SCHEMAS[name]
         gdf = package[name]
         cols = [c for c in types if c in gdf.columns]
-        out = gdf[[*cols, "geometry"]].astype({c: types[c] for c in cols})
+        if name == "eje_vial_corregido":
+            out = gdf.astype({c: types[c] for c in cols})
+        else:
+            out = gdf[[*cols, "geometry"]].astype({c: types[c] for c in cols})
         out.to_crs(crs_wkt).to_file(
             path,
             layer=name,
@@ -460,19 +525,28 @@ def run(root: Path) -> dict[str, Any]:
     # or edits are already reported by `foreground` itself.
     check_fresh(review, [axes_path, polys_path])
 
+    from bogota_syntax import foreground as fgmod
+
+    # The analysis run (review.gpkg) gives the modelling decisions; the errors-only run,
+    # made here, gives the corrected Eje Vial and the problems the SDP can act on.
     layers = {n: gpd.read_file(review, layer=n) for n, _ in pyogrio.list_layers(review)}
     axes = gpd.read_parquet(axes_path).to_crs(CRS)
-    network = gpd.read_parquet(data / "processed" / "foreground.parquet").to_crs(CRS)
+    polygons = gpd.read_parquet(polys_path).to_crs(CRS)
+    analysis_net = gpd.read_parquet(data / "processed" / "foreground.parquet").to_crs(CRS)
     edits = gpd.read_file(edits_path).to_crs(CRS) if edits_path and edits_path.exists() else None
+    sdp = fgmod.clean(axes, polygons, fgmod.Params.from_config(fg), errors_only=True)
+    sdp_layers, network = sdp["layers"], sdp["network"]
 
     package = {
-        "problemas": build_problemas(layers, axes, network, cfg),
-        "correcciones": build_correcciones(layers, axes, cfg),
+        "eje_vial_corregido": build_corregida(network),
+        "problemas": build_problemas(sdp_layers, axes, network, cfg),
+        "correcciones": build_correcciones(sdp_layers, axes, cfg),
         "decisiones_modelado": build_decisiones(layers),
         "ediciones_manuales": build_ediciones(edits),
     }
     limit = gpd.read_parquet(data / "interim" / f"{cfg['limit_source']}.parquet").to_crs(CRS)
     package["problemas"] = mark_limit(package["problemas"], limit, cfg["limit_m"])
+    package["problemas"] = mark_enlace(package["problemas"], layers["interchanges"].to_crs(CRS))
     crs_wkt = sdp_crs(root)
     err = round_trip_error_m(axes, crs_wkt)
     if err > cfg["round_trip_max_m"]:
@@ -485,21 +559,41 @@ def run(root: Path) -> dict[str, Any]:
     n = counts(package) | {
         "n_eje_vial": len(axes),
         "n_eje_sin_codigo": int(axes["CODIGO_ID"].isna().sum()),
+        "n_segmentos": len(network),
+        "km_red": f"{network.length.sum() / 1000:,.1f}".replace(",", "_")
+        .replace(".", ",")
+        .replace("_", "."),
+        "n_piezas": fgmod.components(network),
+        "n_piezas_analisis": fgmod.components(analysis_net),
     }
     from bogota_syntax.sdp_figures import make_figures
 
-    polygons = gpd.read_parquet(polys_path).to_crs(CRS)
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
-        figures = make_figures(package, layers, axes, network, polygons, cfg, out / "figuras")
+        figures = make_figures(
+            package,
+            sdp_layers,
+            axes,
+            network,
+            polygons,
+            cfg,
+            out / "figuras",
+            analysis_network=analysis_net,
+        )
     sources = {k: manifest.get(k, {}) for k in ("sdp_eje_vial", "sdp_red_infraestructura_vial")}
-    values = note_values(n, figures, sources, cfg)
+    ref, dirty = git_ref(root)
+    values = note_values(n, figures, sources, cfg, ref=ref)
     (out / "nota_metodologica.md").write_text(
         render(TEMPLATES / "nota_metodologica.md", values), encoding="utf-8"
     )
     (out / "LEEME.txt").write_text(render(TEMPLATES / "LEEME.txt", values), encoding="utf-8")
     pr = package["problemas"]
     caught_msgs = [str(w.message) for w in caught]
+    if dirty:
+        caught_msgs.append(
+            "src/ or config/ differ from HEAD: the note's links point to code that is not "
+            "the code that ran; commit and run again before sending"
+        )
     if not cfg.get("contacto"):
         caught_msgs.append("sdp_package.contacto is empty: LEEME.txt says '(por completar)'")
     return n | {
@@ -509,6 +603,7 @@ def run(root: Path) -> dict[str, Any]:
         "layers": layers,
         "axes": axes,
         "network": network,
+        "analysis_network": analysis_net,
         "polygons": polygons,
         "cfg": cfg,
         "manifest": {k: manifest.get(k, {}) for k in (fg["axes_source"], fg["polygons_source"])},
@@ -524,12 +619,63 @@ def run(root: Path) -> dict[str, Any]:
 TEMPLATES = Path(__file__).parent / "templates"
 TABLE_ROWS = [
     ("extremo_suelto", "Extremo suelto", "ajuste del extremo"),
-    ("cruce_sin_nodo", "Cruce sin nodo", "división en el cruce"),
+    ("cruce_sin_nodo", "Cruce sin nodo", "se deja como está (posible puente)"),
     ("tramo_corto", "Tramo corto", "eliminado"),
     ("tramo_duplicado", "Tramo duplicado", "eliminado"),
     ("discontinuidad", "Discontinuidad del corredor", "extensión, unión o conector"),
     ("linea_aislada", "Línea aislada", "—"),
 ]
+
+
+def link(repo_url: str, ref: str, path: str) -> str:
+    """URL of `path` in the online repository at commit `ref` (a folder if it ends in /)."""
+    kind = "tree" if path.endswith("/") else "blob"
+    return f"{repo_url.rstrip('/')}/{kind}/{ref}/{path.rstrip('/')}"
+
+
+# What the note links to, as (path in the repository, what it does)
+CODE = [
+    (
+        "src/bogota_syntax/ingest/",
+        "descarga las fuentes del portal de datos abiertos y las reproyecta",
+    ),
+    (
+        "src/bogota_syntax/foreground.py",
+        "la limpieza: clasifica los extremos y aplica cada corrección (pasos 0 a 12)",
+    ),
+    (
+        "src/bogota_syntax/network.py",
+        "une tramos que siguen de extremo a extremo (usado por la limpieza)",
+    ),
+    ("src/bogota_syntax/sdp_package.py", "arma este paquete: capas, conteos y esta nota"),
+    ("src/bogota_syntax/sdp_figures.py", "dibuja las figuras"),
+    ("config/analysis.yaml", "todos los parámetros (bloques `foreground` y `sdp_package`)"),
+    ("config/enlace_decisions.csv", "mis decisiones por enlace vial, solo para el análisis de red"),
+    ("config/foreground_edits.geojson", "mis ediciones manuales, solo para el análisis de red"),
+]
+ADR = "docs/decisions/0012-foreground-network-cleaning.md"
+
+
+def git_ref(root: Path) -> tuple[str, bool]:
+    """(HEAD commit, whether any file the note links to differs from it)."""
+    import subprocess
+
+    def git(*a: str) -> str:
+        out = subprocess.run(["git", *a], cwd=root, capture_output=True, check=True)
+        return out.stdout.decode().strip()
+
+    dirty = bool(
+        git(
+            "status",
+            "--porcelain",
+            "--",
+            *(c for c, _ in CODE),
+            ADR,
+            "src/bogota_syntax/ingest",
+            "src/bogota_syntax/templates",
+        )
+    )
+    return git("rev-parse", "HEAD"), dirty
 
 
 def miles(v: int) -> str:
@@ -555,40 +701,47 @@ def note_values(
     figures: dict[str, dict[str, Any] | None],
     manifest: dict[str, dict[str, Any]],
     cfg: dict[str, Any],
+    ref: str = "main",
 ) -> dict[str, Any]:
     """Everything the note and LEEME templates need: counts, the results table, one
-    Markdown block per figure, source dates and the contact."""
+    Markdown block per figure, links to the code at commit `ref`, source dates and the
+    contact."""
 
     def day(source: str, field: str) -> str:
         v = manifest.get(source, {}).get(field)
         return str(v)[:10] if v else "(sin dato)"
 
+    repo = cfg.get("repo_url", "https://github.com/gregmaya/bogota-syntax")
     n = {k: miles(v) if isinstance(v, int) else v for k, v in n.items()}
     rows = [
-        "| Problema | Encontrados | Corregidos | Abiertos | Cómo se corrigió |",
-        "| --- | ---: | ---: | ---: | --- |",
+        "| Problema | Encontrados | Corregidos | Abiertos | Sin cambio | Cómo se trató |",
+        "| --- | ---: | ---: | ---: | ---: | --- |",
     ]
     for t, label, how in TABLE_ROWS:
         rows.append(
-            f"| {label} | {n[f'n_{t}']} | {n[f'n_{t}_corregido']} | {n[f'n_{t}_abierto']} | {how} |"
+            f"| {label} | {n[f'n_{t}']} | {n[f'n_{t}_corregido']} | {n[f'n_{t}_abierto']} "
+            f"| {n[f'n_{t}_sin_cambio']} | {how} |"
         )
-    corregido = miles(int(n["n_problemas"].replace(".", "")) - int(n["n_abierto"].replace(".", "")))
     rows.append(
-        f"| **Total** | **{n['n_problemas']}** | **{corregido}** | **{n['n_abierto']}** | |"
+        f"| **Total** | **{n['n_problemas']}** | **{n['n_corregido']}** | **{n['n_abierto']}** "
+        f"| **{n['n_sin_cambio']}** | |"
     )
-    contacto = cfg.get("contacto") or "(por completar)"
+    code = "\n".join(f"- [`{path}`]({link(repo, ref, path)}): {what}." for path, what in CODE)
     return (
         n
         | {f"fig{i}": _figure(figures.get(f"fig{i}")) for i in range(1, 8)}
         | {
             "tabla": "\n".join(rows),
-            "n_corregido": corregido,
+            "codigo": code,
+            "repo": repo,
+            "commit": ref[:7],
+            "adr": link(repo, ref, ADR),
             "fecha": date.today().isoformat(),
             "fecha_eje": day("sdp_eje_vial", "ckan_metadata_modified"),
             "fecha_poligonos": day("sdp_red_infraestructura_vial", "ckan_metadata_modified"),
             "fecha_descarga_eje": day("sdp_eje_vial", "retrieved_at"),
             "fecha_descarga_poligonos": day("sdp_red_infraestructura_vial", "retrieved_at"),
-            "contacto": contacto,
+            "contacto": cfg.get("contacto") or "(por completar)",
             "key_m": f"{cfg.get('key_m', '')}".replace(".", ","),
         }
     )

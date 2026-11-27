@@ -208,9 +208,19 @@ def sdp_package() -> None:
 
     root = project_root()
     s = run(root)
-    typer.echo(f"  problemas: {s['n_problemas']} ({s['n_abierto']} abiertos)")
+    typer.echo(
+        f"  eje_vial_corregido: {s['n_segmentos']:,} segments, {s['km_red']} km, "
+        f"{s['n_piezas']} connected pieces (analysis network: {s['n_piezas_analisis']})"
+    )
+    typer.echo(
+        f"  problemas: {s['n_problemas']} ({s['n_corregido']} corregidos, "
+        f"{s['n_abierto']} abiertos, {s['n_sin_cambio']} sin cambio)"
+    )
     for t in TIPOS:
-        typer.echo(f"     {t:<16} {s[f'n_{t}']:>4}  abiertos {s[f'n_{t}_abierto']}")
+        typer.echo(
+            f"     {t:<16} {s[f'n_{t}']:>4}  corregidos {s[f'n_{t}_corregido']}, "
+            f"abiertos {s[f'n_{t}_abierto']}, sin cambio {s[f'n_{t}_sin_cambio']}"
+        )
     typer.echo(f"  correcciones: {s['n_correcciones']}")
     typer.echo(
         f"  decisiones_modelado: {s['n_fusion_nodos']} fusiones de nodos, {s['n_reubicacion']} "

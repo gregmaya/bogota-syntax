@@ -252,6 +252,7 @@ def test_gpkg_written_in_sdp_crs(tmp_path) -> None:
     pr = sp.build_problemas(review_layers(), AX, NET, CFG)
     co = sp.build_correcciones(review_layers(), AX, CFG)
     pkg = {
+        "eje_vial_corregido": sp.build_corregida(NET.assign(sources="original", OBJECTID=[1, 2])),
         "problemas": pr,
         "correcciones": co,
         "decisiones_modelado": sp.build_decisiones(
@@ -337,7 +338,14 @@ def test_note_values_cover_both_templates() -> None:
         "decisiones_modelado": empty(tipo=[], origen=[]),
         "ediciones_manuales": sp.build_ediciones(None),
     }
-    n = sp.counts(pkg) | {"n_eje_vial": 3, "n_eje_sin_codigo": 0}
+    n = sp.counts(pkg) | {
+        "n_eje_vial": 3,
+        "n_eje_sin_codigo": 0,
+        "n_segmentos": 2,
+        "km_red": "0,2",
+        "n_piezas": 2,
+        "n_piezas_analisis": 2,
+    }
     figs = {f"fig{i}": None for i in range(1, 8)}
     manifest = {"sdp_eje_vial": {}, "sdp_red_infraestructura_vial": {}}
     v = sp.note_values(n, figs, manifest, {"contacto": None})
@@ -387,6 +395,9 @@ def test_empty_layers_written_with_their_schema(tmp_path) -> None:
     import pyogrio
 
     pkg = {
+        "eje_vial_corregido": sp.build_corregida(
+            NET.assign(sources="original", OBJECTID=[1, 2]).iloc[:0]
+        ),
         "problemas": sp.build_problemas(review_layers(), AX, NET, CFG).iloc[:0],
         "correcciones": sp.build_correcciones({k: empty() for k in sp.FIX_LAYERS}, AX, CFG),
         "decisiones_modelado": sp.build_decisiones(
@@ -400,6 +411,9 @@ def test_empty_layers_written_with_their_schema(tmp_path) -> None:
     }
     path = tmp_path / "x.gpkg"
     sp.write_gpkg(pkg, path, WKT)
+    corr = pyogrio.read_info(path, layer="eje_vial_corregido")
+    assert corr["geometry_type"] == "LineString"
+    assert dict(zip(corr["fields"], corr["dtypes"], strict=True))["origen"] == "object"
     for name, geom in [
         ("problemas", "Point"),
         ("correcciones", "LineString"),
@@ -409,6 +423,76 @@ def test_empty_layers_written_with_their_schema(tmp_path) -> None:
         info = pyogrio.read_info(path, layer=name)
         assert info["geometry_type"] == geom, name
         types = dict(zip(info["fields"], info["dtypes"], strict=True))
-        assert types["tipo" if "tipo" in types else "edicion"] == "object", name
+        assert types[next(k for k in ("tipo", "edicion") if k in types)] == "object", name
         if "NOMBRE" in types:
             assert types["NOMBRE"] == "object", name
+
+
+# ── errors-only network for the SDP ───────────────────────────────────────────
+
+
+def test_crossings_are_kept_as_possible_bridges() -> None:
+    pr = sp.build_problemas(review_layers(), AX, NET, CFG)
+    c = pr[pr.tipo == "cruce_sin_nodo"].iloc[0]
+    assert (c.estado, c.correccion) == ("sin_cambio", "")
+    assert "posible puente" in c.observacion
+
+
+def test_mark_limit_keeps_existing_notes() -> None:
+    pr = points((0, 0), (0, 50), observacion=["posible puente", ""])
+    out = sp.mark_limit(pr, segs([(-100, 1), (100, 1)]), limit_m=5)
+    assert out.observacion.tolist() == ["posible puente; termina en el límite del Distrito", ""]
+
+
+def test_counts_sin_cambio() -> None:
+    pr = sp.build_problemas(review_layers(), AX, NET, CFG)
+    n = sp.counts(
+        {
+            "problemas": pr,
+            "correcciones": empty(tipo=[]),
+            "decisiones_modelado": empty(tipo=[], origen=[]),
+            "ediciones_manuales": sp.build_ediciones(None),
+        }
+    )
+    assert (n["n_cruce_sin_nodo_corregido"], n["n_cruce_sin_nodo_sin_cambio"]) == (0, 1)
+    assert n["n_sin_cambio"] == 1
+    assert n["n_corregido"] == n["n_problemas"] - n["n_abierto"] - n["n_sin_cambio"]
+
+
+def test_build_corregida_keeps_source_fields_and_says_origin_in_spanish() -> None:
+    net = AX.assign(sources=["original", "extension,original", "connector"])
+    out = sp.build_corregida(net)
+    assert out.origen.tolist() == ["original", "extension, original", "conector"]
+    assert {"OBJECTID", "CODIGO_ID", "NOMBRE", "longitud_m"} <= set(out.columns)
+    assert "sources" not in out.columns
+    assert out.longitud_m.tolist() == [100.0, 100.0, 150.0]
+
+
+def test_links_point_to_a_fixed_commit() -> None:
+    url = sp.link("https://github.com/x/y", "abc123", "src/a.py")
+    assert url == "https://github.com/x/y/blob/abc123/src/a.py"
+
+
+def test_open_ends_inside_an_interchange_are_marked() -> None:
+    pr = points(
+        (0, 0),
+        (500, 0),
+        estado=["abierto", "abierto"],
+        tipo=["discontinuidad"] * 2,
+        observacion=["", ""],
+        OBJECTID=[1, 2],
+        correccion="",
+    )
+    inter = gpd.GeoDataFrame(geometry=[Point(X0, Y0).buffer(30)], crs="EPSG:9377")
+    out = sp.mark_enlace(pr, inter)
+    assert out.observacion.iloc[0].startswith("dentro de un enlace vial")
+    assert out.observacion.iloc[1] == ""
+    n = sp.counts(
+        {
+            "problemas": out,
+            "correcciones": empty(tipo=[]),
+            "decisiones_modelado": empty(tipo=[], origen=[]),
+            "ediciones_manuales": sp.build_ediciones(None),
+        }
+    )
+    assert (n["n_abierto_enlace"], n["n_abierto_faltante"]) == (1, 1)

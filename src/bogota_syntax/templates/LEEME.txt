@@ -2,8 +2,11 @@ EJE VIAL DEL POT: VACÍOS DE GEOMETRÍA Y CORRECCIONES
 Fecha: $fecha
 
 Contenido
-  eje_vial_revision.gpkg   Cuatro capas: problemas, correcciones,
-                           decisiones_modelado y ediciones_manuales.
+  eje_vial_revision.gpkg   Cinco capas. eje_vial_corregido es la red corregida
+                           (solo errores, sin decisiones de modelado); problemas y
+                           correcciones dicen qué encontré y qué cambié;
+                           decisiones_modelado y ediciones_manuales son solo para
+                           mi análisis de red y van por transparencia.
   nota_metodologica.pdf    Qué es, limitaciones, método y resultados, con ejemplos.
   nota_metodologica.md     La misma nota en texto.
   figuras/                 Las figuras de la nota.
@@ -18,5 +21,7 @@ Fuentes (Secretaría Distrital de Planeación, SDP)
 
 Licencia: CC BY 4.0. Cite a la SDP como fuente de los datos y al proyecto
 bogota-syntax como autor de las correcciones.
+
+Código: $repo (commit $commit).
 
 Contacto: $contacto
