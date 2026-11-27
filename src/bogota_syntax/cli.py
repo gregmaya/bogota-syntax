@@ -164,7 +164,10 @@ def foreground() -> None:
     typer.echo(f"  0 input: {s['input_lines']:,} lines; dead ends {cls(s['input'])}")
     typer.echo(f"  1 snapped: {s['snapped']} ends")
     typer.echo(f"  2 crossings split: {s['crossings_split']}")
-    typer.echo(f"  3 removed: {s['stubs']} stubs, {s['duplicates']} duplicates")
+    typer.echo(
+        f"  3 removed: {s['stubs']} stubs, {s['duplicates']} duplicates; "
+        f"after connecting: {s['stubs_after']}"
+    )
     typer.echo(f"  4 dead ends: {cls(s['classified'])}")
     typer.echo(f"  5 pairs joined: {s['pairs']}")
     steps = ", ".join(
@@ -196,6 +199,45 @@ def foreground() -> None:
     )
     for k in ("path", "gpkg", "review_path"):
         typer.echo(f"  -> {s[k].relative_to(root)}")
+
+
+@app.command("sdp-package")
+def sdp_package() -> None:
+    """Spanish package for the SDP (ADR-0013) -> data/processed/sdp_package/."""
+    from bogota_syntax.sdp_package import TIPOS, run
+
+    root = project_root()
+    s = run(root)
+    typer.echo(
+        f"  eje_vial_corregido: {s['n_segmentos']:,} segments, {s['km_red']} km, "
+        f"{s['n_piezas']} connected pieces (analysis network: {s['n_piezas_analisis']})"
+    )
+    typer.echo(
+        f"  problemas: {s['n_problemas']} ({s['n_corregido']} corregidos, "
+        f"{s['n_abierto']} abiertos, {s['n_sin_cambio']} sin cambio)"
+    )
+    for t in TIPOS:
+        typer.echo(
+            f"     {t:<16} {s[f'n_{t}']:>4}  corregidos {s[f'n_{t}_corregido']}, "
+            f"abiertos {s[f'n_{t}_abierto']}, sin cambio {s[f'n_{t}_sin_cambio']}"
+        )
+    typer.echo(f"  correcciones: {s['n_correcciones']}")
+    typer.echo(
+        f"  decisiones_modelado: {s['n_fusion_nodos']} fusiones de nodos, {s['n_reubicacion']} "
+        f"enlaces reubicados ({s['n_reubicacion_revision']} por revisión, "
+        f"{s['n_reubicacion_regla']} por regla)"
+    )
+    typer.echo(
+        f"  ediciones_manuales: {s['n_edicion_agregada']} agregadas, "
+        f"{s['n_edicion_retirada']} retiradas"
+    )
+    typer.echo(f"  rows without an Eje Vial feature in range: {s['n_sin_clave']}")
+    for _, r in s["unmatched"].iterrows():
+        typer.echo(f"     {r['tipo']} ({r['estado']}) at {r.geometry.x:.1f}, {r.geometry.y:.1f}")
+    typer.echo(f"  PCS_CarMAGBOG round trip: {s['round_trip_m'] * 1000:.2f} mm")
+    for w in s.get("warnings", []):
+        typer.echo(f"  warning: {w}")
+    typer.echo(f"  -> {s['dir'].relative_to(root)}")
 
 
 @app.command()

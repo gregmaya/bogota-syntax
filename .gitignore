@@ -97,3 +97,6 @@ _site/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Personal contact for the SDP package (sdp_package.contacto), kept out of the public repo
+config/contacto.local.txt
