@@ -107,3 +107,6 @@ Gregorio reviews the package in QGIS and reads the note. Sending it is his call.
 - Open dead ends inside an interchange polygon are noted as such: the analysis fixes them with a modelling decision, the corrected network leaves them open.
 - Step 3 (stubs) now runs again after step 8 (ADR-0012): an extension on Avenida Usminia had left a 12.4 m stub.
 - The note: first person singular (Gregorio to the SDP); figure 1 framed on the urban area; the method's principle in bold; a "Preguntas para la SDP" section; a "Código utilizado" section listing each file with a link to the repository at the commit that ran (`sdp_package.repo_url`). The command warns when the linked files differ from that commit.
+- Each layer carries a default QGIS style (`layer_styles` table), from `src/bogota_syntax/templates/styles/*.qml`, made with QGIS by `scripts/make_sdp_styles.py`; colours as figure 1.
+- An open case at the city limit is assumed correct: `estado = sin_cambio`, noted in `observacion`.
+- `ediciones_manuales` holds only the lines drawn by hand; the note still counts the lines removed.

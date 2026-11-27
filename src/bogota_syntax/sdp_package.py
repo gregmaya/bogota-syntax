@@ -29,7 +29,7 @@ LAYERS = [
     "ediciones_manuales",
 ]
 BRIDGE = "posible puente: se deja como está; en mi análisis de red sí se divide"
-LIMIT = "termina en el límite del Distrito"
+LIMIT = "termina en el límite del Distrito: se asume correcto"
 ENLACE = (
     "dentro de un enlace vial: en mi análisis de red se resolvió con una decisión de "
     "modelado (enlace reubicado o edición manual)"
@@ -257,18 +257,21 @@ def build_problemas(
 
 
 def mark_limit(pr: gpd.GeoDataFrame, limit: gpd.GeoDataFrame, limit_m: float) -> gpd.GeoDataFrame:
-    """Add `observacion`: rows within `limit_m` metres of the Bogotá limit (`limit`, its
-    boundary as lines or the polygon) end there because the data stops at the city
-    limit, not because a segment is missing."""
+    """Note rows within `limit_m` metres of the Bogotá limit (`limit`, its boundary as
+    lines or the polygon) in `observacion`. An open case there is assumed correct, not
+    open: the Eje Vial stops at the city limit, so its `estado` becomes `sin_cambio`."""
     edge = (
         shapely.union_all(shapely.boundary(limit.geometry.values))
-        if (limit.geom_type.str.contains("Polygon").any())
+        if limit.geom_type.str.contains("Polygon").any()
         else shapely.union_all(limit.geometry.values)
     )
     at = shapely.distance(pr.geometry.values, edge) <= limit_m
     old = pr["observacion"].fillna("") if "observacion" in pr else pd.Series("", index=pr.index)
     new = [(f"{o}; {LIMIT}" if o else LIMIT) if a else o for o, a in zip(old, at, strict=True)]
-    return pr.assign(observacion=new)
+    out = pr.assign(observacion=new)
+    if "estado" in out:
+        out.loc[at & (out["estado"] == "abierto").to_numpy(), "estado"] = "sin_cambio"
+    return out
 
 
 def mark_enlace(pr: gpd.GeoDataFrame, interchanges: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -373,8 +376,11 @@ def build_decisiones(layers: dict[str, gpd.GeoDataFrame]) -> gpd.GeoDataFrame:
 
 
 def build_ediciones(edits: gpd.GeoDataFrame | None) -> gpd.GeoDataFrame:
-    """The reviewed manual edits (config/foreground_edits.geojson) as lines: `edicion`
-    `agregada` (drawn) or `retirada` (removed), with the keys the edits file carries."""
+    """The lines drawn by hand for the analysis network (config/foreground_edits.geojson,
+    `edit: add`), `edicion = agregada`, with the keys the edits file carries. The lines
+    removed by hand are not in the layer; `removed_edits` counts them for the note."""
+    if edits is not None:
+        edits = edits[edits["edit"] == "add"]
     if edits is None or not len(edits):
         return _frame([], EDIT_COLS, edits.crs if edits is not None else "EPSG:9377")
     e = edits.reset_index(drop=True)
@@ -390,6 +396,11 @@ def build_ediciones(edits: gpd.GeoDataFrame | None) -> gpd.GeoDataFrame:
         crs=e.crs,
     )
     return out[[*EDIT_COLS, "geometry"]]
+
+
+def removed_edits(edits: gpd.GeoDataFrame | None) -> int:
+    """How many lines the manual edits remove (`edit: remove`)."""
+    return 0 if edits is None else int((edits["edit"] == "remove").sum())
 
 
 # ── counts, writing, run ──────────────────────────────────────────────────────
@@ -411,7 +422,7 @@ def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
     obs = pr.get("observacion", pd.Series("", index=pr.index)).fillna("")
     lim, enl = obs.str.contains(LIMIT, regex=False), obs.str.contains(ENLACE, regex=False)
     open_gap = (pr["estado"] == "abierto") & (pr["tipo"] == "discontinuidad")
-    n["n_abierto_limite"] = int((open_gap & lim).sum())
+    n["n_limite"] = int(((pr["tipo"] == "discontinuidad") & lim).sum())
     n["n_abierto_enlace"] = int((open_gap & enl & ~lim).sum())
     n["n_abierto_faltante"] = int((open_gap & ~lim & ~enl).sum())
     for c in ("union", "extension", "conector", "reubicacion_o_edicion"):
@@ -426,7 +437,6 @@ def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
     n["n_reubicacion_revision"] = int((rel["origen"] == "revision_manual").sum())
     n["n_reubicacion_regla"] = int((rel["origen"] == "regla").sum())
     n["n_edicion_agregada"] = int((e["edicion"] == "agregada").sum())
-    n["n_edicion_retirada"] = int((e["edicion"] == "retirada").sum())
     km = e.loc[e["edicion"] == "agregada", "longitud_m"].sum() / 1000
     n["km_editados"] = f"{km:.1f}".replace(".", ",")
     return n
@@ -493,7 +503,45 @@ def write_gpkg(package: dict[str, gpd.GeoDataFrame], path: Path, crs_wkt: str) -
             geometry_type=geom,
             layer_metadata={"DESCRIPTION": LICENCE},
         )
+    embed_styles(path)
     return path
+
+
+STYLES = Path(__file__).parent / "templates" / "styles"
+
+
+def embed_styles(path: Path, styles: Path = STYLES) -> None:
+    """Store `styles/<layer>.qml` as each layer's default QGIS style, in the
+    `layer_styles` table QGIS reads from a GeoPackage (registered as an attributes
+    table). The .qml files are made with QGIS by scripts/make_sdp_styles.py."""
+    import sqlite3
+
+    with sqlite3.connect(path) as db:
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS layer_styles (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "f_table_catalog TEXT(256), f_table_schema TEXT(256), f_table_name TEXT(256), "
+            "f_geometry_column TEXT(256), styleName TEXT(30), styleQML TEXT, styleSLD TEXT, "
+            "useAsDefault BOOLEAN, description TEXT, owner TEXT(30), ui TEXT(30), "
+            "update_time DATETIME DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))"
+        )
+        db.execute(
+            "INSERT OR IGNORE INTO gpkg_contents (table_name, data_type, identifier) "
+            "VALUES ('layer_styles', 'attributes', 'layer_styles')"
+        )
+        geom = dict(db.execute("SELECT table_name, column_name FROM gpkg_geometry_columns"))
+        for name in LAYERS:
+            db.execute(
+                "INSERT INTO layer_styles (f_table_catalog, f_table_schema, f_table_name, "
+                "f_geometry_column, styleName, styleQML, styleSLD, useAsDefault, description) "
+                "VALUES ('', '', ?, ?, ?, ?, '', 1, ?)",
+                (
+                    name,
+                    geom[name],
+                    name,
+                    (styles / f"{name}.qml").read_text(encoding="utf-8"),
+                    "Estilo por defecto del paquete (colores de la figura 1)",
+                ),
+            )
 
 
 def check_fresh(review: Path, inputs: list[Path]) -> None:
@@ -557,6 +605,7 @@ def run(root: Path) -> dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
     gpkg = write_gpkg(package, out / "eje_vial_revision.gpkg", crs_wkt)
     n = counts(package) | {
+        "n_edicion_retirada": removed_edits(edits),
         "n_eje_vial": len(axes),
         "n_eje_sin_codigo": int(axes["CODIGO_ID"].isna().sum()),
         "n_segmentos": len(network),
@@ -622,7 +671,11 @@ TABLE_ROWS = [
     ("cruce_sin_nodo", "Cruce sin nodo", "se deja como está (posible puente)"),
     ("tramo_corto", "Tramo corto", "eliminado"),
     ("tramo_duplicado", "Tramo duplicado", "eliminado"),
-    ("discontinuidad", "Discontinuidad del corredor", "extensión, unión o conector"),
+    (
+        "discontinuidad",
+        "Discontinuidad del corredor",
+        "extensión, unión o conector; en el límite del Distrito se asume correcta",
+    ),
     ("linea_aislada", "Línea aislada", "—"),
 ]
 
@@ -649,6 +702,7 @@ CODE = [
     ),
     ("src/bogota_syntax/sdp_package.py", "arma este paquete: capas, conteos y esta nota"),
     ("src/bogota_syntax/sdp_figures.py", "dibuja las figuras"),
+    ("scripts/make_sdp_styles.py", "crea con QGIS los estilos que trae el GeoPackage"),
     ("config/analysis.yaml", "todos los parámetros (bloques `foreground` y `sdp_package`)"),
     ("config/enlace_decisions.csv", "mis decisiones por enlace vial, solo para el análisis de red"),
     ("config/foreground_edits.geojson", "mis ediciones manuales, solo para el análisis de red"),

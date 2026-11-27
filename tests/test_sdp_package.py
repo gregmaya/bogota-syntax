@@ -227,9 +227,10 @@ def test_edits_labelled_in_spanish() -> None:
         NOMBRE=["x", "y"],
     )
     out = sp.build_ediciones(e)
-    assert out.edicion.tolist() == ["agregada", "retirada"]
-    assert out.longitud_m.tolist() == [10.0, 30.0]
-    assert out.OBJECTID.tolist() == [1, 2]
+    assert out.edicion.tolist() == ["agregada"]  # removed lines are not in the layer
+    assert out.longitud_m.tolist() == [10.0]
+    assert out.OBJECTID.tolist() == [1]
+    assert sp.removed_edits(e) == 1
 
 
 def test_stale_review_stops_run(tmp_path) -> None:
@@ -268,7 +269,7 @@ def test_gpkg_written_in_sdp_crs(tmp_path) -> None:
     sp.write_gpkg(pkg, path, WKT)
     import pyogrio
 
-    assert [n for n, _ in pyogrio.list_layers(path)] == sp.LAYERS
+    assert [n for n, _ in pyogrio.list_layers(path)] == [*sp.LAYERS, "layer_styles"]
     assert "CarMAGBOG" in pyogrio.read_info(path, layer="problemas")["crs"]
     back = gpd.read_file(path, layer="problemas")
     assert len(back) == len(pr)
@@ -295,7 +296,9 @@ def test_rows_at_city_limit_are_marked() -> None:
     pr = points((0, 0), (0, 50), estado=["abierto", "abierto"], tipo=["discontinuidad"] * 2)
     limit = segs([(-100, 1), (100, 1)])
     out = sp.mark_limit(pr, limit, limit_m=5)
-    assert out.observacion.tolist() == ["termina en el límite del Distrito", ""]
+    assert out.observacion.tolist() == [sp.LIMIT, ""]
+    assert out.estado.tolist() == ["sin_cambio", "abierto"]  # at the limit = assumed correct
+    assert "se asume correcto" in sp.LIMIT
 
 
 # ── task 5: note and LEEME ────────────────────────────────────────────────────
@@ -345,6 +348,7 @@ def test_note_values_cover_both_templates() -> None:
         "km_red": "0,2",
         "n_piezas": 2,
         "n_piezas_analisis": 2,
+        "n_edicion_retirada": 0,
     }
     figs = {f"fig{i}": None for i in range(1, 8)}
     manifest = {"sdp_eje_vial": {}, "sdp_red_infraestructura_vial": {}}
@@ -363,8 +367,8 @@ def test_open_cases_split_without_double_counting() -> None:
         (0, 2),
         (0, 3),
         tipo=["discontinuidad", "discontinuidad", "discontinuidad", "linea_aislada"],
-        estado=["abierto"] * 4,
-        observacion=["termina en el límite del Distrito", "", "", ""],
+        estado=["sin_cambio", "abierto", "abierto", "abierto"],
+        observacion=[sp.LIMIT, "", "", ""],
         correccion="",
         OBJECTID=[1, 2, 3, 4],
     )
@@ -376,7 +380,7 @@ def test_open_cases_split_without_double_counting() -> None:
             "ediciones_manuales": sp.build_ediciones(None),
         }
     )
-    assert (n["n_abierto_faltante"], n["n_abierto_limite"], n["n_linea_aislada_abierto"]) == (
+    assert (n["n_abierto_faltante"], n["n_limite"], n["n_linea_aislada_abierto"]) == (
         2,
         1,
         1,
@@ -441,7 +445,7 @@ def test_crossings_are_kept_as_possible_bridges() -> None:
 def test_mark_limit_keeps_existing_notes() -> None:
     pr = points((0, 0), (0, 50), observacion=["posible puente", ""])
     out = sp.mark_limit(pr, segs([(-100, 1), (100, 1)]), limit_m=5)
-    assert out.observacion.tolist() == ["posible puente; termina en el límite del Distrito", ""]
+    assert out.observacion.tolist() == [f"posible puente; {sp.LIMIT}", ""]
 
 
 def test_counts_sin_cambio() -> None:
@@ -496,3 +500,33 @@ def test_open_ends_inside_an_interchange_are_marked() -> None:
         }
     )
     assert (n["n_abierto_enlace"], n["n_abierto_faltante"]) == (1, 1)
+
+
+def test_gpkg_carries_a_default_qgis_style_per_layer(tmp_path) -> None:
+    import sqlite3
+
+    pr = sp.build_problemas(review_layers(), AX, NET, CFG)
+    pkg = {
+        "eje_vial_corregido": sp.build_corregida(NET.assign(sources="original", OBJECTID=[1, 2])),
+        "problemas": pr,
+        "correcciones": sp.build_correcciones(review_layers(), AX, CFG),
+        "decisiones_modelado": sp.build_decisiones(
+            {
+                "junctions_merged": points((1, 1)),
+                "centres": empty(polygon=[]),
+                "interchanges": empty(CODIGO_ID=[], NOMBRE=[], action=[]),
+            }
+        ),
+        "ediciones_manuales": sp.build_ediciones(None),
+    }
+    path = sp.write_gpkg(pkg, tmp_path / "x.gpkg", WKT)
+    with sqlite3.connect(path) as db:
+        rows = db.execute(
+            "SELECT f_table_name, f_geometry_column, useAsDefault, styleQML FROM layer_styles"
+        ).fetchall()
+        registered = db.execute(
+            "SELECT data_type FROM gpkg_contents WHERE table_name = 'layer_styles'"
+        ).fetchone()
+    assert sorted(r[0] for r in rows) == sorted(sp.LAYERS)
+    assert all(r[1] and r[2] == 1 and r[3].startswith("<!DOCTYPE qgis") for r in rows)
+    assert registered == ("attributes",)

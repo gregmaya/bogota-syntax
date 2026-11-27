@@ -8,18 +8,18 @@ Este paquete señala los puntos donde el Eje Vial que publica la Secretaría Dis
 
 No es una versión oficial ni reemplaza al Eje Vial. Las correcciones son inferencias geométricas, no levantamientos en campo.
 
-Revisé las $n_eje_vial líneas del Eje Vial del Plan de Ordenamiento Territorial (POT, Decreto 555 de 2021), versión del $fecha_eje, junto con los polígonos de la Red de Infraestructura Vial Arterial, versión del $fecha_poligonos. Encontré $n_problemas problemas: corregí $n_corregido, $n_abierto quedan abiertos y $n_sin_cambio son cruces que dejé como están porque pueden ser puentes.
+Revisé las $n_eje_vial líneas del Eje Vial del Plan de Ordenamiento Territorial (POT, Decreto 555 de 2021), versión del $fecha_eje, junto con los polígonos de la Red de Infraestructura Vial Arterial, versión del $fecha_poligonos. Encontré $n_problemas problemas: corregí $n_corregido, $n_abierto quedan abiertos y $n_sin_cambio los dejé como están ($n_cruce_sin_nodo cruces que pueden ser puentes y $n_limite extremos en el límite del Distrito, que asumo correctos).
 
 $fig1
 
 ## Qué contiene
 
-`eje_vial_revision.gpkg`, en el sistema de coordenadas del Eje Vial publicado (PCS_CarMAGBOG):
+`eje_vial_revision.gpkg`, en el sistema de coordenadas del Eje Vial publicado (PCS_CarMAGBOG). Al abrirlo en QGIS, cada capa carga su estilo por defecto, con los colores de la primera figura:
 
 - **`eje_vial_corregido` (líneas): la red corregida, el punto de partida que sugiero.** Son $n_segmentos segmentos y $km_red km, con todos los campos del Eje Vial tal como se publican, más `origen` (qué produjo cada geometría: `original`, `union`, `extension` o `conector`) y `longitud_m`. Solo incluye correcciones de errores: no divide los cruces sin nodo y no incluye mis decisiones de modelado.
 - `problemas` (puntos): cada problema con `tipo`, `estado` (`corregido`, `abierto` o `sin_cambio`), `correccion`, `distancia_m`, `longitud_m`, `observacion` y la línea publicada donde está (`OBJECTID`, `CODIGO_ID`, `NOMBRE`; en los cruces también `OBJECTID_2`). Los abiertos van primero.
 - `correcciones` (líneas): lo que agregué o moví (`ajuste`, `union`, `extension`, `conector`).
-- `decisiones_modelado` (puntos) y `ediciones_manuales` (líneas): lo que hice solo para mi análisis de red. Los incluyo por transparencia; no sugiero añadirlos al Eje Vial.
+- `decisiones_modelado` (puntos) y `ediciones_manuales` (las líneas que dibujé a mano): lo que hice solo para mi análisis de red. Los incluyo por transparencia; no sugiero añadirlos al Eje Vial.
 
 ## Limitaciones
 
@@ -27,7 +27,7 @@ $fig1
 - **Continuidad.** Aunque no divido los cruces, la red corregida queda en $n_piezas piezas conectadas entre sí; mi red de análisis, con los cruces divididos, queda en $n_piezas_analisis.
 - **Vías proyectadas.** No uso `ESTADO_VIA`: una vía proyectada cuenta como construida, y eso puede hacer que un extremo parezca una discontinuidad.
 - **Inferencia, no campo.** Las correcciones siguen reglas geométricas y los polígonos del POT. Nada se verificó en terreno.
-- **Límite del Distrito.** El Eje Vial termina en el límite de Bogotá. De los casos abiertos, $n_abierto_limite terminan justo ahí y probablemente no son tramos faltantes.
+- **Límite del Distrito.** El Eje Vial termina en el límite de Bogotá. Un extremo que cae en el límite lo asumo correcto, no abierto, aunque el corredor parezca seguir: hay $n_limite así, marcados `sin_cambio`.
 - **Códigos.** $n_eje_sin_codigo de las $n_eje_vial líneas publicadas no tienen `CODIGO_ID`. Esas filas se identifican solo por `OBJECTID`.
 
 ## Método
@@ -62,7 +62,7 @@ $fig5
 
 ### Casos abiertos: los que más conviene revisar
 
-De los $n_abierto casos abiertos, $n_abierto_faltante parecen tramos que faltan en el Eje Vial, $n_abierto_limite terminan en el límite del Distrito, $n_abierto_enlace quedan dentro de un enlace vial y en $n_linea_aislada_abierto la línea queda aislada del resto de la red. No los completé: no hay forma de saber el trazado sin la SDP. Los que quedan dentro de un enlace sí los resolví en mi análisis de red, con una decisión de modelado (ver abajo).
+De los $n_abierto casos abiertos, $n_abierto_faltante parecen tramos que faltan en el Eje Vial, $n_abierto_enlace quedan dentro de un enlace vial y en $n_linea_aislada_abierto la línea queda aislada del resto de la red. No los completé: no hay forma de saber el trazado sin la SDP. Los que quedan dentro de un enlace sí los resolví en mi análisis de red, con una decisión de modelado (ver abajo).
 
 $fig6
 

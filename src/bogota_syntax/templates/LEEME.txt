@@ -12,6 +12,7 @@ Contenido
   figuras/                 Las figuras de la nota.
 
 Sistema de coordenadas: PCS_CarMAGBOG, el mismo del Eje Vial publicado.
+Estilos: en QGIS cada capa abre con su estilo por defecto (colores de la primera figura de la nota).
 
 Fuentes (Secretaría Distrital de Planeación, SDP)
   Eje Vial, POT Decreto 555 de 2021 (datos abiertos: eje-vial-bogota-d-c),
