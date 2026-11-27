@@ -18,5 +18,6 @@ ADRs are immutable once accepted. To change a decision, write a new ADR that sup
 | [0010](0010-v1-mvi-only.md) | v1 network is MVI only; the stitched network is shelved | Accepted | 2026-11-22 |
 | [0011](0011-density-farness-hillier.md) | Add angular density, farness and Hillier integration | Accepted | 2026-11-23 |
 | [0012](0012-foreground-network-cleaning.md) | Foreground network from SDP Eje Vial, cleaned with the POT arterial polygons; classify before correcting | Proposed | 2026-11-24 |
+| [0013](0013-sdp-package-licence.md) | The Eje Vial package for the SDP is licensed CC BY 4.0 | Proposed | 2026-11-26 |
 
 New ADRs copy [template.md](template.md) and take the next number.
