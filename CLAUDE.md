@@ -40,6 +40,7 @@ uv run bogota-syntax join                # shelved for v1: OSM + MVI at the boun
 uv run bogota-syntax network             # v1: MVI-only segments -> data/processed/network.parquet (~4 min)
 uv run bogota-syntax foreground            # SDP Eje Vial cleaned with the POT arterial polygons (ADR-0012) -> data/processed/foreground.{parquet,gpkg} (~35 s)
 uv run bogota-syntax centrality [--area city]  # density, farness, harmonic, Hillier, betweenness (ADR-0009/0011) -> data/processed/centrality_<area>.parquet (~4 min)
+uv run bogota-syntax sdp-package           # Spanish package for the SDP (ADR-0013): problems, fixes, figures, note -> data/processed/sdp_package/ (~5 s)
 uv run pytest
 uv run ruff check . && uv run ruff format .
 ```

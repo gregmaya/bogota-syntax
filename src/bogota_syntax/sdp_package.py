@@ -350,9 +350,10 @@ def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
     n["n_problemas"] = len(pr)
     n["n_abierto"] = int((pr["estado"] == "abierto").sum())
     n["n_sin_clave"] = int(pr["OBJECTID"].isna().sum())
-    lim = pr.get("observacion", pd.Series("", index=pr.index)) != ""
-    n["n_abierto_limite"] = int(((pr["estado"] == "abierto") & lim).sum())
-    n["n_abierto_faltante"] = n["n_abierto"] - n["n_abierto_limite"]
+    lim = pr.get("observacion", pd.Series("", index=pr.index)).fillna("") != ""
+    open_gap = (pr["estado"] == "abierto") & (pr["tipo"] == "discontinuidad")
+    n["n_abierto_limite"] = int((open_gap & lim).sum())
+    n["n_abierto_faltante"] = int((open_gap & ~lim).sum())
     for c in ("union", "extension", "conector", "reubicacion_o_edicion"):
         n[f"n_discontinuidad_{c}"] = int(
             ((pr["tipo"] == "discontinuidad") & (pr["correccion"] == c)).sum()
@@ -443,10 +444,19 @@ def run(root: Path) -> dict[str, Any]:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         figures = make_figures(package, layers, axes, network, polygons, cfg, out / "figuras")
+    sources = {k: manifest.get(k, {}) for k in ("sdp_eje_vial", "sdp_red_infraestructura_vial")}
+    values = note_values(n, figures, sources, cfg)
+    (out / "nota_metodologica.md").write_text(
+        render(TEMPLATES / "nota_metodologica.md", values), encoding="utf-8"
+    )
+    (out / "LEEME.txt").write_text(render(TEMPLATES / "LEEME.txt", values), encoding="utf-8")
     pr = package["problemas"]
+    caught_msgs = [str(w.message) for w in caught]
+    if not cfg.get("contacto"):
+        caught_msgs.append("sdp_package.contacto is empty: LEEME.txt says '(por completar)'")
     return n | {
         "figures": figures,
-        "warnings": [str(w.message) for w in caught],
+        "warnings": caught_msgs,
         "package": package,
         "layers": layers,
         "axes": axes,
@@ -459,3 +469,77 @@ def run(root: Path) -> dict[str, Any]:
         "dir": out,
         "gpkg": gpkg,
     }
+
+
+# ── note and LEEME ────────────────────────────────────────────────────────────
+
+TEMPLATES = Path(__file__).parent / "templates"
+TABLE_ROWS = [
+    ("extremo_suelto", "Extremo suelto", "ajuste del extremo"),
+    ("cruce_sin_nodo", "Cruce sin nodo", "división en el cruce"),
+    ("tramo_corto", "Tramo corto", "eliminado"),
+    ("tramo_duplicado", "Tramo duplicado", "eliminado"),
+    ("discontinuidad", "Discontinuidad del corredor", "extensión, unión o conector"),
+    ("linea_aislada", "Línea aislada", "—"),
+]
+
+
+def miles(v: int) -> str:
+    """An integer with a dot between thousands, as written in Spanish (1.149)."""
+    return f"{v:,}".replace(",", ".")
+
+
+def render(template: Path, values: dict[str, Any]) -> str:
+    """Fill `$name` placeholders; a missing value raises KeyError."""
+    from string import Template
+
+    return Template(template.read_text(encoding="utf-8")).substitute(values)
+
+
+def _figure(fig: dict[str, Any] | None) -> str:
+    if fig is None:
+        return "_Sin casos._"
+    return f"![]({Path('figuras') / Path(fig['path']).name})\n\n_{fig['caption']}_"
+
+
+def note_values(
+    n: dict[str, Any],
+    figures: dict[str, dict[str, Any] | None],
+    manifest: dict[str, dict[str, Any]],
+    cfg: dict[str, Any],
+) -> dict[str, Any]:
+    """Everything the note and LEEME templates need: counts, the results table, one
+    Markdown block per figure, source dates and the contact."""
+
+    def day(source: str, field: str) -> str:
+        v = manifest.get(source, {}).get(field)
+        return str(v)[:10] if v else "(sin dato)"
+
+    n = {k: miles(v) if isinstance(v, int) else v for k, v in n.items()}
+    rows = [
+        "| Problema | Encontrados | Corregidos | Abiertos | Cómo se corrigió |",
+        "| --- | ---: | ---: | ---: | --- |",
+    ]
+    for t, label, how in TABLE_ROWS:
+        rows.append(
+            f"| {label} | {n[f'n_{t}']} | {n[f'n_{t}_corregido']} | {n[f'n_{t}_abierto']} | {how} |"
+        )
+    corregido = miles(int(n["n_problemas"].replace(".", "")) - int(n["n_abierto"].replace(".", "")))
+    rows.append(
+        f"| **Total** | **{n['n_problemas']}** | **{corregido}** | **{n['n_abierto']}** | |"
+    )
+    contacto = cfg.get("contacto") or "(por completar)"
+    return (
+        n
+        | {f"fig{i}": _figure(figures.get(f"fig{i}")) for i in range(1, 8)}
+        | {
+            "tabla": "\n".join(rows),
+            "n_corregido": corregido,
+            "fecha": date.today().isoformat(),
+            "fecha_eje": day("sdp_eje_vial", "ckan_metadata_modified"),
+            "fecha_poligonos": day("sdp_red_infraestructura_vial", "ckan_metadata_modified"),
+            "fecha_descarga_eje": day("sdp_eje_vial", "retrieved_at"),
+            "fecha_descarga_poligonos": day("sdp_red_infraestructura_vial", "retrieved_at"),
+            "contacto": contacto,
+        }
+    )

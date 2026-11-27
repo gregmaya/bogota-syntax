@@ -1,0 +1,22 @@
+EJE VIAL DEL POT: VACÍOS DE GEOMETRÍA Y CORRECCIONES
+Fecha: $fecha
+
+Contenido
+  eje_vial_revision.gpkg   Cuatro capas: problemas, correcciones,
+                           decisiones_modelado y ediciones_manuales.
+  nota_metodologica.pdf    Qué es, limitaciones, método y resultados, con ejemplos.
+  nota_metodologica.md     La misma nota en texto.
+  figuras/                 Las figuras de la nota.
+
+Sistema de coordenadas: PCS_CarMAGBOG, el mismo del Eje Vial publicado.
+
+Fuentes (Secretaría Distrital de Planeación, SDP)
+  Eje Vial, POT Decreto 555 de 2021 (datos abiertos: eje-vial-bogota-d-c),
+    modificado el $fecha_eje, descargado el $fecha_descarga_eje.
+  Red de Infraestructura Vial Arterial (datos abiertos: red-infraestructura-vial-bogota-d-c),
+    modificado el $fecha_poligonos, descargado el $fecha_descarga_poligonos.
+
+Licencia: CC BY 4.0. Cite a la SDP como fuente de los datos y al proyecto
+bogota-syntax como autor de las correcciones.
+
+Contacto: $contacto

@@ -295,3 +295,86 @@ def test_rows_at_city_limit_are_marked() -> None:
     limit = segs([(-100, 1), (100, 1)])
     out = sp.mark_limit(pr, limit, limit_m=5)
     assert out.observacion.tolist() == ["termina en el límite del Distrito", ""]
+
+
+# ── task 5: note and LEEME ────────────────────────────────────────────────────
+
+TEMPLATES = Path(sp.__file__).parent / "templates"
+
+
+def test_render_fills_every_placeholder(tmp_path) -> None:
+    t = tmp_path / "t.md"
+    t.write_text("$a y $b", encoding="utf-8")
+    assert sp.render(t, {"a": 1, "b": 2}) == "1 y 2"
+
+
+def test_render_missing_value_raises(tmp_path) -> None:
+    import pytest
+
+    t = tmp_path / "t.md"
+    t.write_text("$a y $b", encoding="utf-8")
+    with pytest.raises(KeyError):
+        sp.render(t, {"a": 1})
+
+
+def test_note_has_no_bare_digits_outside_placeholders() -> None:
+    import re
+
+    allowed = ["Decreto 555 de 2021", "CC BY 4.0", "ADR-0012", "OBJECTID_2"]
+    for name in ("nota_metodologica.md", "LEEME.txt"):
+        text = (TEMPLATES / name).read_text(encoding="utf-8")
+        for a in allowed:
+            text = text.replace(a, "")
+        text = re.sub(r"\$\{?\w+\}?", "", text)
+        assert not re.search(r"\d", text), f"{name}: {re.findall(r'.{20}\d.{20}', text)}"
+
+
+def test_note_values_cover_both_templates() -> None:
+    pr = sp.build_problemas(review_layers(), AX, NET, CFG).assign(observacion="")
+    pkg = {
+        "problemas": pr,
+        "correcciones": empty(tipo=[]),
+        "decisiones_modelado": empty(tipo=[], origen=[]),
+        "ediciones_manuales": sp.build_ediciones(None),
+    }
+    n = sp.counts(pkg) | {"n_eje_vial": 3, "n_eje_sin_codigo": 0}
+    figs = {f"fig{i}": None for i in range(1, 8)}
+    manifest = {"sdp_eje_vial": {}, "sdp_red_infraestructura_vial": {}}
+    v = sp.note_values(n, figs, manifest, {"contacto": None})
+    for name in ("nota_metodologica.md", "LEEME.txt"):
+        out = sp.render(TEMPLATES / name, v)
+        assert "$" not in out
+    assert "Sin casos" in v["fig7"]
+    assert "(por completar)" in v["contacto"]
+
+
+def test_open_cases_split_without_double_counting() -> None:
+    pr = points(
+        (0, 0),
+        (0, 1),
+        (0, 2),
+        (0, 3),
+        tipo=["discontinuidad", "discontinuidad", "discontinuidad", "linea_aislada"],
+        estado=["abierto"] * 4,
+        observacion=["termina en el límite del Distrito", "", "", ""],
+        correccion="",
+        OBJECTID=[1, 2, 3, 4],
+    )
+    n = sp.counts(
+        {
+            "problemas": pr,
+            "correcciones": empty(tipo=[]),
+            "decisiones_modelado": empty(tipo=[], origen=[]),
+            "ediciones_manuales": sp.build_ediciones(None),
+        }
+    )
+    assert (n["n_abierto_faltante"], n["n_abierto_limite"], n["n_linea_aislada_abierto"]) == (
+        2,
+        1,
+        1,
+    )
+
+
+def test_thousands_with_a_dot() -> None:
+    assert sp.miles(1149) == "1.149"
+    assert sp.miles(256) == "256"
