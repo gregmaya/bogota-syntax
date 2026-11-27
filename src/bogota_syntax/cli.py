@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Annotated
 
 import typer
@@ -233,19 +232,13 @@ def centrality(
     area: Annotated[
         str, typer.Option(help="pilot (ADR-0004) or city (urban perimeter).")
     ] = "pilot",
-    network: Annotated[
-        str,
-        typer.Option(help="Network version: v1 (network.parquet) or vN (network_vN.parquet)."),
-    ] = "v1",
 ) -> None:
-    """Simplest-path closeness and betweenness (ADR-0009) -> centrality_<area>[_vN].parquet."""
+    """Simplest-path closeness and betweenness (ADR-0009) -> data/processed/centrality_<area>."""
     from bogota_syntax.centrality import run
 
     if area not in ("pilot", "city"):
         raise typer.BadParameter("area must be pilot or city")
-    if not re.fullmatch(r"v\d+(\.\d+)?", network):
-        raise typer.BadParameter("network must look like v1, v2 or v2.1")
-    s = run(project_root(), area, network)
+    s = run(project_root(), area)
     typer.echo(
         f"  {s['segments']:,} segments ({s['live']:,} live), {s['km']:,.0f} km, "
         f"{s['seconds']:.0f} s"
