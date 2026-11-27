@@ -1,6 +1,6 @@
 # ADR-0013: The Eje Vial package for the SDP is licensed CC BY 4.0
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-26
 - **Related:** ADR-0002 (output data licence), ADR-0012 (foreground network)
 
