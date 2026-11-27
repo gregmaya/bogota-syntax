@@ -196,9 +196,11 @@ def snap_dead_ends(lines: gpd.GeoDataFrame, tol: float, connected_m: float):
     return lines, gpd.GeoDataFrame(snaps, geometry="geometry", crs=lines.crs)
 
 
-def node_all(lines: gpd.GeoDataFrame, connected_m: float):
+def node_all(lines: gpd.GeoDataFrame, connected_m: float, split_crossings: bool = True):
     """Steps 2 and 9. Split at T-junctions and at every crossing; each piece keeps its
-    parent's attributes. Returns (pieces, crossing points)."""
+    parent's attributes. With `split_crossings=False` (the SDP package's errors-only
+    run), crossings are found but left as drawn, since some are bridges. Returns
+    (pieces, crossing points)."""
     lines = neatnet.induce_nodes(lines.reset_index(drop=True)).reset_index(drop=True)
     g = lines.geometry.values
     tree = shapely.STRtree(g)
@@ -206,6 +208,8 @@ def node_all(lines: gpd.GeoDataFrame, connected_m: float):
     keep = a < b
     xs = shapely.get_parts(shapely.intersection(g[a[keep]], g[b[keep]]))
     crossings = gpd.GeoDataFrame(geometry=xs[shapely.get_type_id(xs) == 0], crs=lines.crs)
+    if not split_crossings:
+        return lines, crossings
     pieces = shapely.get_parts(shapely.node(shapely.union_all(g)))
     pieces = pieces[shapely.length(pieces) > 0.01]
     mid = shapely.line_interpolate_point(pieces, 0.5, normalized=True)
@@ -785,9 +789,12 @@ def clean(
     decisions: pd.DataFrame | None = None,
     edits: gpd.GeoDataFrame | None = None,
     edits_match_m: float = 0.01,
+    errors_only: bool = False,
 ) -> dict[str, Any]:
     """Run steps 0-12 on Eje Vial `axes` with the arterial `polygons` (both EPSG:9377).
     Step 11 runs only when `r` and `decisions` are given, step 12 only with `edits`.
+    `errors_only` (the SDP package) keeps only the fixes to data errors: crossings are
+    not split (steps 2 and 9), and junctions are not merged (7) nor lines simplified (10).
     Returns the final network under "network", one layer per correction, and counts."""
     polys = prepare_polygons(polygons, p.polygon_touch_m)
     net = prepare_axes(axes)
@@ -795,8 +802,8 @@ def clean(
 
     net, snaps = snap_dead_ends(net, p.snap_m, p.connected_m)
     s["snapped"] = len(snaps)
-    net, crossings = node_all(net, p.connected_m)
-    s["crossings_split"] = len(crossings)
+    net, crossings = node_all(net, p.connected_m, split_crossings=not errors_only)
+    s["crossings_split"] = 0 if errors_only else len(crossings)
     net, removed = drop_stubs(net, p)
     s["stubs"] = int((removed["why"] == "stub").sum())
     s["duplicates"] = int((removed["why"] == "duplicate").sum())
@@ -818,18 +825,32 @@ def clean(
     s["extensions"] = len(extensions)
     s["extension_steps"] = steps
 
-    net, moved = merge_junctions(net, p.merge_junctions_m)
-    net = consolidate(net)
+    if errors_only:
+        moved = gpd.GeoDataFrame(geometry=[], crs=net.crs)
+    else:
+        net, moved = merge_junctions(net, p.merge_junctions_m)
+        net = consolidate(net)
     s["junctions_moved"] = len(moved)
 
     net, connectors, review = connect(net, polys, p)
     s["connectors"] = connectors["kind"].value_counts().to_dict()
     s["review"] = len(review)
 
-    net, _ = node_all(net, p.connected_m)
+    # Step 3 again: an extension or connector that lands just short of a line's own
+    # dead end leaves that end as a stub.
+    net, removed_after = drop_stubs(net, p)
+    s["stubs_after"] = len(removed_after)
+    removed = pd.concat([removed, removed_after], ignore_index=True).pipe(
+        gpd.GeoDataFrame, geometry="geometry", crs=net.crs
+    )
+
+    net, _ = node_all(net, p.connected_m, split_crossings=not errors_only)
     net = consolidate(net)
     v0 = int(shapely.get_num_coordinates(net.geometry.values).sum())
-    net, s["jogs"] = simplify_lines(net, polys, p)
+    if errors_only:
+        s["jogs"] = 0
+    else:
+        net, s["jogs"] = simplify_lines(net, polys, p)
     s["vertices"] = (v0, int(shapely.get_num_coordinates(net.geometry.values).sum()))
 
     relocation = {}

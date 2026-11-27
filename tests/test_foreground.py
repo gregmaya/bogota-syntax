@@ -232,3 +232,37 @@ def test_manual_edits_remove_matching_lines_add_new_ones_and_report_stale() -> N
     assert len(out) == 3 and len(stale) == 1
     assert sorted(xy(g, -1) for g in out.geometry) == [(100, 0), (150, 80), (200, 0)]
     assert (out["source"] == "manual").sum() == 1
+
+
+def raw_polygons(*boxes) -> gpd.GeoDataFrame:
+    return gpd.GeoDataFrame(
+        {"NOMBRE": [f"p{i}" for i in range(len(boxes))]},
+        geometry=[box(X0 + a, Y0 + b, X0 + c, Y0 + d) for a, b, c, d in boxes],
+        crs="EPSG:9377",
+    )
+
+
+def test_node_all_can_leave_crossings_unsplit(p) -> None:
+    gdf = lines([(0, 0), (100, 0)], [(50, -50), (50, 50)])
+    out, crossings = fg.node_all(gdf, p.connected_m, split_crossings=False)
+    assert len(out) == 2 and len(crossings) == 1
+
+
+def test_stub_left_by_an_extension_is_removed(p) -> None:
+    # The critical end at (100, 0) is extended onto the cross street 12 m ahead; the cross
+    # street runs 8 m past that point and would be left as a dead-end stub.
+    axes = lines([(-50, 0), (100, 0)], [(112, -60), (112, 8)])
+    res = fg.clean(axes, raw_polygons(*CORRIDOR), p)
+    net = res["network"]
+    dead = fg.dead_end_mask(net, p.connected_m).reshape(2, -1).any(axis=0)
+    assert not ((net.length.values < p.stub_m) & dead).any()
+
+
+def test_errors_only_skips_crossing_splits_junction_merges_and_simplify(p) -> None:
+    axes = lines([(-50, 0), (220, 0)], [(50, -50), (50, 50)])
+    res = fg.clean(axes, raw_polygons(*CORRIDOR), p, errors_only=True)
+    assert len(res["network"]) == 2  # the crossing is kept as drawn
+    assert len(res["layers"]["crossings"]) == 1
+    assert res["summary"]["junctions_moved"] == 0
+    full = fg.clean(axes, raw_polygons(*CORRIDOR), p)
+    assert len(full["network"]) == 4

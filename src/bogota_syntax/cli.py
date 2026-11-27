@@ -164,7 +164,10 @@ def foreground() -> None:
     typer.echo(f"  0 input: {s['input_lines']:,} lines; dead ends {cls(s['input'])}")
     typer.echo(f"  1 snapped: {s['snapped']} ends")
     typer.echo(f"  2 crossings split: {s['crossings_split']}")
-    typer.echo(f"  3 removed: {s['stubs']} stubs, {s['duplicates']} duplicates")
+    typer.echo(
+        f"  3 removed: {s['stubs']} stubs, {s['duplicates']} duplicates; "
+        f"after connecting: {s['stubs_after']}"
+    )
     typer.echo(f"  4 dead ends: {cls(s['classified'])}")
     typer.echo(f"  5 pairs joined: {s['pairs']}")
     steps = ", ".join(

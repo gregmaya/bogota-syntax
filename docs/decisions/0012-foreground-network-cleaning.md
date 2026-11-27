@@ -42,7 +42,7 @@ Each worked once it was limited to the places a classification picked out.
    | 0 | Explode, drop duplicate and zero-length lines | all | |
    | 1 | Snap each dead end onto another line's end, else onto the nearest point of a line | dead ends with a gap below the limit, any class | 5 m |
    | 2 | Split at T-junctions and at every crossing | all (bridges are not told apart yet) | |
-   | 3 | Remove dead-end segments that are short, or that run alongside other lines (duplicates, one per pass, so two lines beside each other don't both go); repeat with the merge until stable | dead-end segments | stub < 20 m; duplicate: > 50% of length within 5 m of other lines |
+   | 3 | Remove dead-end segments that are short, or that run alongside other lines (duplicates, one per pass, so two lines beside each other don't both go); repeat with the merge until stable. Run again after step 8, because an extension or connector that lands just short of a line's own dead end leaves a stub | dead-end segments | stub < 20 m; duplicate: > 50% of length within 5 m of other lines |
    | 4 | Classify dead ends (point 3) | dead ends | 1 m, 0.5 m |
    | 5 | Join two dead ends at their midpoint | mutual-nearest dead ends in the same or touching polygons, pointing opposite ways (≥ 135° apart) and not away from each other | 135° |
    | 6 | Extend onto the nearest line within a ±30° cone ahead, in growing steps; split and merge after every step | `critical` ends; the extension must stay inside the end's polygons plus their neighbours | 5 to 50 m in 5 m steps, ±30° |
@@ -72,23 +72,23 @@ Each worked once it was limited to the places a classification picked out.
 
 ## Results
 
-From `bogota-syntax foreground` on 2026-11-25, Eje Vial as ingested on 2026-11-22 and the polygons on 2026-11-24 (1,414 polygons):
+From `bogota-syntax foreground` on 2026-11-27, Eje Vial as ingested on 2026-11-22 and the polygons on 2026-11-24 (1,414 polygons):
 
 | Step | Result | Dead ends (critical / corridor_end / no_polygon) |
 | --- | --- | --- |
 | 0. Input | 1,235 lines | 238 / 15 / 19 |
 | 1. Snap | 112 ends moved | |
 | 2. Split | 45 crossings split | |
-| 3. Remove | 18 stubs, 1 duplicate | |
+| 3. Remove | 18 stubs, 1 duplicate; 1 more stub after connecting (step 8) | |
 | 4. Classify | | 79 / 13 / 15 |
 | 5. Pairs | 7 joined | |
 | 6. Extend | 55 extensions; 17 of them at the 10 m step | |
 | 7. Merge junctions | 32 junctions moved | |
 | 8. Connect | 4 to a junction, 1 to a line; 5 to review | |
-| 10. Simplify | 16 jogs straightened; vertices 33,925 → 11,565 | |
+| 10. Simplify | 16 jogs straightened; vertices 33,921 → 11,562 | |
 | 11. Interchange centres | 59 relocated: 54 by decision, 5 by the rule; 340 kept and 15 left for review by decision; 42 kept by the rule; 0 stale decisions | |
 | 12. Manual edits | 46 lines removed, 36 added (4.4 km redrawn); 0 stale | |
-| Final | 1,016 segments, 1,074.3 km, 2 connected pieces, 0 crossings without a shared point | 4 / 13 / 15 |
+| Final | 1,014 segments, 1,074.3 km, 2 connected pieces, 0 crossings without a shared point | 4 / 13 / 14 |
 
 The 4 `critical` dead ends left are review cases. Gregorio checked them in QGIS and accepted them as open: missing road segments in the source data, and corridors whose polygons carry on past where Eje Vial stops. A fifth, inside the Congreso Eucarístico / Ciudad Montes / Constitución interchange, goes when that interchange is relocated (a decision Gregorio labelled right). The second connected piece is a single isolated line, left for the background network to reach.
 
