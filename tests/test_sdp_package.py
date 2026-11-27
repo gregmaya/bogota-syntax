@@ -180,3 +180,111 @@ def test_open_rows_first() -> None:
     pr = sp.build_problemas(review_layers(), AX, NET, CFG)
     assert pr.estado.iloc[0] == "abierto"
     assert (pr.estado == "abierto").sum() == 2
+
+
+# ── task 3: modelling layers, GeoPackage, run ─────────────────────────────────
+
+
+def test_relocated_centre_gets_interchange_keys_and_origin() -> None:
+    inter = gpd.GeoDataFrame(
+        {
+            "CODIGO_ID": ["1084", "2000"],
+            "NOMBRE": ["Enlace A", "Enlace B"],
+            "action": ["relocate", "relocate (rule)"],
+        },
+        geometry=[
+            Point(X0, Y0).buffer(50),
+            Point(X0 + 500, Y0).buffer(50),
+        ],
+        crs="EPSG:9377",
+    )
+    L = {
+        "junctions_merged": points((900, 900)),
+        "centres": points((10, 5), (505, 0), polygon=[0, 1]),
+        "interchanges": inter,
+    }
+    d = sp.build_decisiones(L)
+    rel = d[d.tipo == "reubicacion_enlace"].set_index("CODIGO_ID")
+    assert rel.loc["1084", "origen"] == "revision_manual"
+    assert rel.loc["2000", "origen"] == "regla"
+    assert rel.loc["1084", "NOMBRE"] == "Enlace A"
+    assert (d.tipo == "fusion_nodos").sum() == 1
+
+
+def test_no_edits_file_gives_empty_layer() -> None:
+    e = sp.build_ediciones(None)
+    assert len(e) == 0
+    assert {"edicion", "longitud_m", *sp.KEYS} <= set(e.columns)
+
+
+def test_edits_labelled_in_spanish() -> None:
+    e = segs(
+        [(0, 0), (10, 0)],
+        [(0, 5), (30, 5)],
+        edit=["add", "remove"],
+        OBJECTID=[1.0, 2.0],
+        CODIGO_ID=["a", "b"],
+        NOMBRE=["x", "y"],
+    )
+    out = sp.build_ediciones(e)
+    assert out.edicion.tolist() == ["agregada", "retirada"]
+    assert out.longitud_m.tolist() == [10.0, 30.0]
+    assert out.OBJECTID.tolist() == [1, 2]
+
+
+def test_stale_review_stops_run(tmp_path) -> None:
+    import os
+
+    interim = tmp_path / "data" / "interim"
+    (interim / "foreground").mkdir(parents=True)
+    review = interim / "foreground" / "review.gpkg"
+    review.write_text("x")
+    parquet = interim / "sdp_eje_vial.parquet"
+    parquet.write_text("x")
+    os.utime(review, (1_000, 1_000))
+    import pytest
+
+    with pytest.raises(RuntimeError, match="bogota-syntax foreground"):
+        sp.check_fresh(review, [parquet])
+
+
+def test_gpkg_written_in_sdp_crs(tmp_path) -> None:
+    pr = sp.build_problemas(review_layers(), AX, NET, CFG)
+    co = sp.build_correcciones(review_layers(), AX, CFG)
+    pkg = {
+        "problemas": pr,
+        "correcciones": co,
+        "decisiones_modelado": sp.build_decisiones(
+            {
+                "junctions_merged": points((1, 1)),
+                "centres": empty(polygon=[]),
+                "interchanges": empty(CODIGO_ID=[], NOMBRE=[], action=[]),
+            }
+        ),
+        "ediciones_manuales": sp.build_ediciones(None),
+    }
+    path = tmp_path / "eje_vial_revision.gpkg"
+    sp.write_gpkg(pkg, path, WKT)
+    import pyogrio
+
+    assert [n for n, _ in pyogrio.list_layers(path)] == sp.LAYERS
+    assert "CarMAGBOG" in pyogrio.read_info(path, layer="problemas")["crs"]
+    back = gpd.read_file(path, layer="problemas")
+    assert len(back) == len(pr)
+
+
+def test_counts_names() -> None:
+    pr = sp.build_problemas(review_layers(), AX, NET, CFG)
+    n = sp.counts(
+        {
+            "problemas": pr,
+            "correcciones": empty(tipo=[]),
+            "decisiones_modelado": empty(tipo=[], origen=[]),
+            "ediciones_manuales": sp.build_ediciones(None),
+        }
+    )
+    assert n["n_discontinuidad"] == 4
+    assert n["n_discontinuidad_abierto"] == 1
+    assert n["n_abierto"] == 2
+    assert n["n_sin_clave"] == int(pr.OBJECTID.isna().sum())
+    assert n["n_edicion_agregada"] == 0

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Annotated
 
 import typer
@@ -198,18 +199,53 @@ def foreground() -> None:
         typer.echo(f"  -> {s[k].relative_to(root)}")
 
 
+@app.command("sdp-package")
+def sdp_package() -> None:
+    """Spanish package for the SDP (ADR-0013) -> data/processed/sdp_package/."""
+    from bogota_syntax.sdp_package import TIPOS, run
+
+    root = project_root()
+    s = run(root)
+    typer.echo(f"  problemas: {s['n_problemas']} ({s['n_abierto']} abiertos)")
+    for t in TIPOS:
+        typer.echo(f"     {t:<16} {s[f'n_{t}']:>4}  abiertos {s[f'n_{t}_abierto']}")
+    typer.echo(f"  correcciones: {s['n_correcciones']}")
+    typer.echo(
+        f"  decisiones_modelado: {s['n_fusion_nodos']} fusiones de nodos, {s['n_reubicacion']} "
+        f"enlaces reubicados ({s['n_reubicacion_revision']} por revisión, "
+        f"{s['n_reubicacion_regla']} por regla)"
+    )
+    typer.echo(
+        f"  ediciones_manuales: {s['n_edicion_agregada']} agregadas, "
+        f"{s['n_edicion_retirada']} retiradas"
+    )
+    typer.echo(f"  rows without an Eje Vial feature in range: {s['n_sin_clave']}")
+    for _, r in s["unmatched"].iterrows():
+        typer.echo(f"     {r['tipo']} ({r['estado']}) at {r.geometry.x:.1f}, {r.geometry.y:.1f}")
+    typer.echo(f"  PCS_CarMAGBOG round trip: {s['round_trip_m'] * 1000:.2f} mm")
+    for w in s.get("warnings", []):
+        typer.echo(f"  warning: {w}")
+    typer.echo(f"  -> {s['dir'].relative_to(root)}")
+
+
 @app.command()
 def centrality(
     area: Annotated[
         str, typer.Option(help="pilot (ADR-0004) or city (urban perimeter).")
     ] = "pilot",
+    network: Annotated[
+        str,
+        typer.Option(help="Network version: v1 (network.parquet) or vN (network_vN.parquet)."),
+    ] = "v1",
 ) -> None:
-    """Simplest-path closeness and betweenness (ADR-0009) -> data/processed/centrality_<area>."""
+    """Simplest-path closeness and betweenness (ADR-0009) -> centrality_<area>[_vN].parquet."""
     from bogota_syntax.centrality import run
 
     if area not in ("pilot", "city"):
         raise typer.BadParameter("area must be pilot or city")
-    s = run(project_root(), area)
+    if not re.fullmatch(r"v\d+(\.\d+)?", network):
+        raise typer.BadParameter("network must look like v1, v2 or v2.1")
+    s = run(project_root(), area, network)
     typer.echo(
         f"  {s['segments']:,} segments ({s['live']:,} live), {s['km']:,.0f} km, "
         f"{s['seconds']:.0f} s"

@@ -7,6 +7,8 @@ EPSG:9377 metres until the GeoPackage is written in the SDP's own PCS_CarMAGBOG.
 
 from __future__ import annotations
 
+import json
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -123,7 +125,8 @@ def _frame(rows: list[gpd.GeoDataFrame], cols: list[str], crs) -> gpd.GeoDataFra
     if not rows:
         return gpd.GeoDataFrame({c: [] for c in cols}, geometry=[], crs=crs)
     out = pd.concat(rows, ignore_index=True)
-    return gpd.GeoDataFrame(out, geometry="geometry", crs=crs)[[*cols, "geometry"]]
+    out = out.reindex(columns=[*cols, "geometry"])
+    return gpd.GeoDataFrame(out, geometry="geometry", crs=crs)
 
 
 def _near(pts: np.ndarray, lines: gpd.GeoDataFrame, tol: float) -> np.ndarray:
@@ -239,3 +242,185 @@ def build_correcciones(
         )
         out.append(attach_keys(base, axes, cfg["key_m"], at="start"))
     return _frame(out, FIX_COLS, axes.crs)
+
+
+# ── decisiones_modelado and ediciones_manuales ────────────────────────────────
+
+DECISION_COLS = ["tipo", "origen", "CODIGO_ID", "NOMBRE"]
+EDIT_COLS = ["edicion", "longitud_m", *KEYS]
+ORIGEN = {"relocate": "revision_manual", "relocate (rule)": "regla"}
+
+
+def build_decisiones(layers: dict[str, gpd.GeoDataFrame]) -> gpd.GeoDataFrame:
+    """One point per place changed for network analysis, not because the data is wrong:
+    merged junctions (`fusion_nodos`) and relocated interchange centres
+    (`reubicacion_enlace`, keyed to the interchange polygon holding the centre)."""
+    j, c, inter = layers["junctions_merged"], layers["centres"], layers["interchanges"]
+    crs = inter.crs or j.crs
+    out = []
+    if len(j):
+        out.append(
+            gpd.GeoDataFrame(
+                {"tipo": "fusion_nodos", "origen": "regla"},
+                index=pd.RangeIndex(len(j)),
+                geometry=j.geometry.values,
+                crs=crs,
+            )
+        )
+    if len(c):
+        poly = inter[inter["action"].isin(list(ORIGEN))][
+            ["CODIGO_ID", "NOMBRE", "action", "geometry"]
+        ]
+        hit = gpd.sjoin(
+            gpd.GeoDataFrame(geometry=c.geometry.values, crs=crs),
+            poly,
+            predicate="within",
+            how="left",
+        )
+        hit = hit[~hit.index.duplicated()]
+        out.append(
+            gpd.GeoDataFrame(
+                {
+                    "tipo": "reubicacion_enlace",
+                    "origen": hit["action"].map(ORIGEN).to_numpy(),
+                    "CODIGO_ID": hit["CODIGO_ID"].to_numpy(),
+                    "NOMBRE": hit["NOMBRE"].to_numpy(),
+                },
+                geometry=hit.geometry.values,
+                crs=crs,
+            )
+        )
+    return _frame(out, DECISION_COLS, crs)
+
+
+def build_ediciones(edits: gpd.GeoDataFrame | None) -> gpd.GeoDataFrame:
+    """The reviewed manual edits (config/foreground_edits.geojson) as lines: `edicion`
+    `agregada` (drawn) or `retirada` (removed), with the keys the edits file carries."""
+    if edits is None or not len(edits):
+        return _frame([], EDIT_COLS, edits.crs if edits is not None else "EPSG:9377")
+    e = edits.reset_index(drop=True)
+    out = gpd.GeoDataFrame(
+        {
+            "edicion": e["edit"].map({"add": "agregada", "remove": "retirada"}).to_numpy(),
+            "longitud_m": e.length.round(1).to_numpy(),
+            "OBJECTID": pd.array(e["OBJECTID"].round(), dtype="Int64"),
+            "CODIGO_ID": e["CODIGO_ID"].astype("string").to_numpy(),
+            "NOMBRE": e["NOMBRE"].astype("string").to_numpy(),
+        },
+        geometry=e.geometry.values,
+        crs=e.crs,
+    )
+    return out[[*EDIT_COLS, "geometry"]]
+
+
+# ── counts, writing, run ──────────────────────────────────────────────────────
+
+
+def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
+    """Flat counts for the note and the command line."""
+    pr, d, e = package["problemas"], package["decisiones_modelado"], package["ediciones_manuales"]
+    n: dict[str, Any] = {}
+    for t in TIPOS:
+        rows = pr[pr["tipo"] == t]
+        n[f"n_{t}"] = len(rows)
+        n[f"n_{t}_abierto"] = int((rows["estado"] == "abierto").sum())
+        n[f"n_{t}_corregido"] = n[f"n_{t}"] - n[f"n_{t}_abierto"]
+    n["n_problemas"] = len(pr)
+    n["n_abierto"] = int((pr["estado"] == "abierto").sum())
+    n["n_sin_clave"] = int(pr["OBJECTID"].isna().sum())
+    for c in ("union", "extension", "conector", "reubicacion_o_edicion"):
+        n[f"n_discontinuidad_{c}"] = int(
+            ((pr["tipo"] == "discontinuidad") & (pr["correccion"] == c)).sum()
+        )
+    for t, k in (("correcciones", "n_correcciones"),):
+        n[k] = len(package[t])
+    n["n_fusion_nodos"] = int((d["tipo"] == "fusion_nodos").sum())
+    rel = d[d["tipo"] == "reubicacion_enlace"]
+    n["n_reubicacion"] = len(rel)
+    n["n_reubicacion_revision"] = int((rel["origen"] == "revision_manual").sum())
+    n["n_reubicacion_regla"] = int((rel["origen"] == "regla").sum())
+    n["n_edicion_agregada"] = int((e["edicion"] == "agregada").sum())
+    n["n_edicion_retirada"] = int((e["edicion"] == "retirada").sum())
+    km = e.loc[e["edicion"] == "agregada", "longitud_m"].sum() / 1000
+    n["km_editados"] = f"{km:.1f}".replace(".", ",")
+    return n
+
+
+def write_gpkg(package: dict[str, gpd.GeoDataFrame], path: Path, crs_wkt: str) -> Path:
+    """Write the four layers, in order, in `crs_wkt` (PCS_CarMAGBOG), each with the
+    licence notice as its description."""
+    path.unlink(missing_ok=True)
+    for name in LAYERS:
+        package[name].to_crs(crs_wkt).to_file(
+            path, layer=name, driver="GPKG", layer_metadata={"DESCRIPTION": LICENCE}
+        )
+    return path
+
+
+def check_fresh(review: Path, inputs: list[Path]) -> None:
+    """Stop if the foreground review layers are older than any input they come from."""
+    if not review.exists():
+        raise RuntimeError(f"{review} is missing: run `bogota-syntax foreground` first")
+    stale = [p for p in inputs if p.exists() and p.stat().st_mtime > review.stat().st_mtime]
+    if stale:
+        names = ", ".join(p.name for p in stale)
+        raise RuntimeError(
+            f"{names} is newer than {review.name}: run `bogota-syntax foreground` first"
+        )
+
+
+def run(root: Path) -> dict[str, Any]:
+    """Build the SDP package from the foreground outputs (ADR-0012) into
+    data/processed/sdp_package/entrega_sdp_eje_vial_<date>/. Returns the counts, the
+    unmatched rows, the round-trip error and the paths."""
+    from bogota_syntax.config import CRS, data_dir, load_analysis
+
+    analysis = load_analysis(root)
+    cfg, fg = analysis["sdp_package"], analysis["foreground"]
+    data = data_dir(root)
+    review = data / "interim" / "foreground" / "review.gpkg"
+    axes_path = data / "interim" / f"{fg['axes_source']}.parquet"
+    polys_path = data / "interim" / f"{fg['polygons_source']}.parquet"
+    edits_path = root / fg["edits"] if fg.get("edits") else None
+    # Data inputs only: git resets config files' dates on checkout, and stale decisions
+    # or edits are already reported by `foreground` itself.
+    check_fresh(review, [axes_path, polys_path])
+
+    layers = {n: gpd.read_file(review, layer=n) for n, _ in pyogrio.list_layers(review)}
+    axes = gpd.read_parquet(axes_path).to_crs(CRS)
+    network = gpd.read_parquet(data / "processed" / "foreground.parquet").to_crs(CRS)
+    edits = gpd.read_file(edits_path).to_crs(CRS) if edits_path and edits_path.exists() else None
+
+    package = {
+        "problemas": build_problemas(layers, axes, network, cfg),
+        "correcciones": build_correcciones(layers, axes, cfg),
+        "decisiones_modelado": build_decisiones(layers),
+        "ediciones_manuales": build_ediciones(edits),
+    }
+    crs_wkt = sdp_crs(root)
+    err = round_trip_error_m(axes, crs_wkt)
+    if err > cfg["round_trip_max_m"]:
+        raise RuntimeError(f"PCS_CarMAGBOG round trip moves points {err:.3f} m")
+
+    manifest = json.loads((root / "config" / "manifest.json").read_text(encoding="utf-8"))
+    out = data / "processed" / "sdp_package" / f"entrega_sdp_eje_vial_{date.today().isoformat()}"
+    out.mkdir(parents=True, exist_ok=True)
+    gpkg = write_gpkg(package, out / "eje_vial_revision.gpkg", crs_wkt)
+    n = counts(package) | {
+        "n_eje_vial": len(axes),
+        "n_eje_sin_codigo": int(axes["CODIGO_ID"].isna().sum()),
+    }
+    pr = package["problemas"]
+    return n | {
+        "package": package,
+        "layers": layers,
+        "axes": axes,
+        "network": network,
+        "polygons": gpd.read_parquet(polys_path).to_crs(CRS),
+        "cfg": cfg,
+        "manifest": {k: manifest.get(k, {}) for k in (fg["axes_source"], fg["polygons_source"])},
+        "unmatched": pr[pr["OBJECTID"].isna()][["tipo", "estado", "geometry"]],
+        "round_trip_m": err,
+        "dir": out,
+        "gpkg": gpkg,
+    }
