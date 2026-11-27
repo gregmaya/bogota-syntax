@@ -4,7 +4,7 @@ Nota metodológica · $fecha
 
 ## Qué es y qué no es
 
-Este paquete señala los puntos donde el Eje Vial que publica la Secretaría Distrital de Planeación (SDP) no forma una red conectada, y muestra cómo los corregimos para un análisis de red. Cada problema está ubicado y asociado al `OBJECTID` de la línea publicada, para revisarlo uno por uno.
+Este paquete señala los puntos donde el Eje Vial que publica la Secretaría Distrital de Planeación (SDP) no forma una red conectada, y muestra cómo los corregimos para un análisis de red. Cada problema está ubicado y asociado al `OBJECTID` de la línea publicada más cercana, para revisarlo uno por uno; $n_sin_clave no tienen ninguna línea a menos de $key_m m y quedan sin `OBJECTID`.
 
 No es una versión oficial ni reemplaza al Eje Vial. Las correcciones son inferencias geométricas, no levantamientos en campo.
 

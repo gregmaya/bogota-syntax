@@ -372,13 +372,61 @@ def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
     return n
 
 
+# Field types and geometry per layer, so an empty layer keeps its schema.
+_TEXT, _NUM, _INT = "string", "Float64", "Int64"
+SCHEMAS: dict[str, tuple[str, dict[str, str]]] = {
+    "problemas": (
+        "Point",
+        {
+            "tipo": _TEXT,
+            "estado": _TEXT,
+            "correccion": _TEXT,
+            "distancia_m": _NUM,
+            "longitud_m": _NUM,
+            "OBJECTID": _INT,
+            "CODIGO_ID": _TEXT,
+            "NOMBRE": _TEXT,
+            "OBJECTID_2": _INT,
+            "observacion": _TEXT,
+        },
+    ),
+    "correcciones": (
+        "LineString",
+        {"tipo": _TEXT, "longitud_m": _NUM, "OBJECTID": _INT, "CODIGO_ID": _TEXT, "NOMBRE": _TEXT},
+    ),
+    "decisiones_modelado": (
+        "Point",
+        {"tipo": _TEXT, "origen": _TEXT, "CODIGO_ID": _TEXT, "NOMBRE": _TEXT},
+    ),
+    "ediciones_manuales": (
+        "LineString",
+        {
+            "edicion": _TEXT,
+            "longitud_m": _NUM,
+            "OBJECTID": _INT,
+            "CODIGO_ID": _TEXT,
+            "NOMBRE": _TEXT,
+        },
+    ),
+}
+
+
 def write_gpkg(package: dict[str, gpd.GeoDataFrame], path: Path, crs_wkt: str) -> Path:
-    """Write the four layers, in order, in `crs_wkt` (PCS_CarMAGBOG), each with the
-    licence notice as its description."""
+    """Write the four layers, in order, in `crs_wkt` (PCS_CarMAGBOG), with the field
+    types and geometry of `SCHEMAS` (also when a layer is empty) and the licence notice
+    as each layer's description."""
     path.unlink(missing_ok=True)
     for name in LAYERS:
-        package[name].to_crs(crs_wkt).to_file(
-            path, layer=name, driver="GPKG", layer_metadata={"DESCRIPTION": LICENCE}
+        geom, types = SCHEMAS[name]
+        gdf = package[name]
+        cols = [c for c in types if c in gdf.columns]
+        out = gdf[[*cols, "geometry"]].astype({c: types[c] for c in cols})
+        out.to_crs(crs_wkt).to_file(
+            path,
+            layer=name,
+            driver="GPKG",
+            geometry_type=geom,
+            layer_metadata={"DESCRIPTION": LICENCE},
         )
     return path
 
@@ -541,5 +589,6 @@ def note_values(
             "fecha_descarga_eje": day("sdp_eje_vial", "retrieved_at"),
             "fecha_descarga_poligonos": day("sdp_red_infraestructura_vial", "retrieved_at"),
             "contacto": contacto,
+            "key_m": f"{cfg.get('key_m', '')}".replace(".", ","),
         }
     )

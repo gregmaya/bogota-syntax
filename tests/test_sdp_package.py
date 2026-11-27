@@ -378,3 +378,37 @@ def test_open_cases_split_without_double_counting() -> None:
 def test_thousands_with_a_dot() -> None:
     assert sp.miles(1149) == "1.149"
     assert sp.miles(256) == "256"
+
+
+# ── final review fixes ────────────────────────────────────────────────────────
+
+
+def test_empty_layers_written_with_their_schema(tmp_path) -> None:
+    import pyogrio
+
+    pkg = {
+        "problemas": sp.build_problemas(review_layers(), AX, NET, CFG).iloc[:0],
+        "correcciones": sp.build_correcciones({k: empty() for k in sp.FIX_LAYERS}, AX, CFG),
+        "decisiones_modelado": sp.build_decisiones(
+            {
+                "junctions_merged": empty(),
+                "centres": empty(polygon=[]),
+                "interchanges": empty(CODIGO_ID=[], NOMBRE=[], action=[]),
+            }
+        ),
+        "ediciones_manuales": sp.build_ediciones(None),
+    }
+    path = tmp_path / "x.gpkg"
+    sp.write_gpkg(pkg, path, WKT)
+    for name, geom in [
+        ("problemas", "Point"),
+        ("correcciones", "LineString"),
+        ("decisiones_modelado", "Point"),
+        ("ediciones_manuales", "LineString"),
+    ]:
+        info = pyogrio.read_info(path, layer=name)
+        assert info["geometry_type"] == geom, name
+        types = dict(zip(info["fields"], info["dtypes"], strict=True))
+        assert types["tipo" if "tipo" in types else "edicion"] == "object", name
+        if "NOMBRE" in types:
+            assert types["NOMBRE"] == "object", name

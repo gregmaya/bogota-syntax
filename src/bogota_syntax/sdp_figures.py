@@ -275,10 +275,14 @@ def make_figures(
         "extremo_suelto",
         kept(pr[pr["tipo"] == "extremo_suelto"], ["ajuste"]),
         lambda r: (
-            f"Figura 2. Extremo suelto{_who(r)}: la línea termina a "
-            f"{_num(r['distancia_m'])} m de otra sin tocarla. Se ajusta el extremo."
+            f"Figura 2. Extremo suelto{_who(r)}: el extremo no comparte un punto con la "
+            f"otra línea; queda a {_num(r['distancia_m'])} m. Se ajusta a esa línea "
+            "(punto naranja)."
         ),
-        highlight=fixes(["ajuste"]),
+        # the adjusted end, not the snap vector, which reads as an added line
+        highlight=lambda f: gpd.GeoDataFrame(
+            geometry=shapely.get_point(fixes(["ajuste"])(f).geometry.values, -1), crs=axes.crs
+        ),
         window=ws,
     )
     case(

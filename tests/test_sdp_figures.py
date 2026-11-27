@@ -48,3 +48,25 @@ def test_make_figures_writes_pngs(tmp_path) -> None:
         assert figs[k]["caption"]
     assert figs["fig7"] is None  # no relocated interchange in the fixture
     assert X0 and Y0
+
+
+def test_loose_end_caption_is_neutral(tmp_path) -> None:
+    L = review_layers()
+    pkg = {
+        "problemas": sp.build_problemas(L, AX, NET, CFG),
+        "correcciones": sp.build_correcciones(L, AX, CFG),
+        "decisiones_modelado": empty(tipo=[], origen=[], CODIGO_ID=[], NOMBRE=[]),
+        "ediciones_manuales": sp.build_ediciones(None),
+    }
+    figs = sf.make_figures(
+        pkg,
+        L,
+        AX,
+        NET.assign(sources="original"),
+        empty(),
+        CFG | {"figure_window_m": 100, "examples": {}},
+        tmp_path,
+    )
+    cap = figs["fig2"]["caption"]
+    assert "sin tocarla" not in cap  # the end may overshoot the other line
+    assert "queda a 2,0 m" in cap
