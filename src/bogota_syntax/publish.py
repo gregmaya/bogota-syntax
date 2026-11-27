@@ -70,8 +70,13 @@ def _method(layer: dict, net: dict) -> dict[str, str]:
     return {lang: " ".join(p[lang].strip() for p in parts) for lang in ("es", "en")}
 
 
-def write_pmtiles(gdf: gpd.GeoDataFrame, path: Path, layer: str, minzoom: int, maxzoom: int):
-    """Write `gdf` (any CRS) as a PMTiles vector file with one layer named `layer`."""
+def write_pmtiles(
+    gdf: gpd.GeoDataFrame, path: Path, layer: str, minzoom: int, maxzoom: int, max_bytes: int
+):
+    """Write `gdf` (any CRS) as a PMTiles vector file with one layer named `layer`.
+
+    `max_bytes` is GDAL's MAX_SIZE: a tile over it is rewritten on a coarser grid.
+    """
     import pyogrio
 
     path.unlink(missing_ok=True)
@@ -80,7 +85,7 @@ def write_pmtiles(gdf: gpd.GeoDataFrame, path: Path, layer: str, minzoom: int, m
         path,
         driver="PMTiles",
         layer=layer,
-        dataset_options={"MINZOOM": minzoom, "MAXZOOM": maxzoom},
+        dataset_options={"MINZOOM": minzoom, "MAXZOOM": maxzoom, "MAX_SIZE": max_bytes},
     )
 
 
@@ -93,6 +98,8 @@ def run(root: Path) -> dict[str, Any]:
     cfg = load_etapas(root)
     out = root / cfg["out_dir"]
     out.mkdir(parents=True, exist_ok=True)
+    for old in out.glob("*.pmtiles"):  # layers dropped from the config must not linger
+        old.unlink()
     cache: dict[str, gpd.GeoDataFrame] = {}
     layers = []
     for layer in cfg["layers"]:
@@ -107,7 +114,12 @@ def run(root: Path) -> dict[str, Any]:
         fields = [KEEP[0], field, *KEEP[1:]]
         sub = gdf[[*fields, "geometry"]]
         write_pmtiles(
-            sub, out / f"{layer['id']}.pmtiles", layer["id"], net["minzoom"], net["maxzoom"]
+            sub,
+            out / f"{layer['id']}.pmtiles",
+            layer["id"],
+            net["minzoom"],
+            net["maxzoom"],
+            net["max_tile_bytes"],
         )
         style: dict[str, Any] = {"field": field, "kind": layer["kind"]}
         if layer["kind"] == "sequential":
@@ -139,6 +151,12 @@ def run(root: Path) -> dict[str, Any]:
                 "attribution": " ".join(net["attribution"].split()),
             }
         )
+        if "series" in layer:
+            p = cfg["series_parameter"]
+            layers[-1]["series"] = layer["series"]
+            layers[-1]["parameter"] = {**p, "value": layer["radius_m"]}
+        if "subtitle" in net:
+            layers[-1]["subtitle"] = net["subtitle"]
     doc = {
         "schema_version": cfg["schema_version"],
         "producer": cfg["producer"],

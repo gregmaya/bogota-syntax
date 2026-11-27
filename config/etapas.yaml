@@ -17,6 +17,11 @@ networks:
     live_only: true
     minzoom: 11
     maxzoom: 16
+    # GDAL's MAX_SIZE (compressed bytes): a tile over it is rewritten on a coarser grid
+    # (76-153 m at zoom 11-12 on v2 with the 500 KB default). The heaviest v2 tile, zoom 11
+    # 602/997, is 2.0-2.4 MB compressed at the full 4096 grid.
+    max_tile_bytes: 4000000
+    subtitle: {es: "v2", en: "v2"}
     sources:
       - ideca_malla_vial
       - sdp_eje_vial
@@ -41,26 +46,18 @@ networks:
         restored; crossings with no junction made into junctions. Built with spike scripts
         that are not in the package yet.
 
-layers:
-  - id: red_vial_v2
-    network: v2
-    style_field: source
-    kind: categorical
-    title: {es: "Red vial v2, por origen", en: "Street network v2, by origin"}
-    description:
-      es: Cada segmento de la red v2, coloreado según de dónde viene su geometría.
-      en: Each segment of network v2, coloured by where its geometry comes from.
-    review:
-      es: ¿Hay líneas paralelas o huecos donde el primer plano se une al fondo?
-      en: Are there parallel lines or gaps where the foreground meets the background?
-    unit: {es: "origen de la geometría", en: "geometry origin"}
+# One entry per measure in the atlas panel, with the radius as a slider (contract item 6).
+series_parameter: {label: {es: Radio, en: Radius}, unit: m}
 
+layers:
   - &harmonic
     id: centralidad_armonica_800_v2
     network: v2
+    series: {id: centralidad_armonica, title: {es: "Cercanía armónica angular", en: "Angular harmonic closeness"}}
+    radius_m: 800
     style_field: cc_harmonic_800_ang
     kind: sequential
-    title: {es: "Cercanía armónica angular, 800 m (red v2)", en: "Angular harmonic closeness, 800 m (network v2)"}
+    title: {es: "Cercanía armónica angular, 800 m", en: "Angular harmonic closeness, 800 m"}
     description:
       es: Cercanía de cada segmento a los demás dentro de 800 m, por la ruta más simple.
       en: How close each segment is to the others within 800 m, by the simplest route.
@@ -70,15 +67,17 @@ layers:
     unit: {es: "índice, sin unidad", en: "index, no unit"}
   - <<: *harmonic
     id: centralidad_armonica_2000_v2
+    radius_m: 2000
     style_field: cc_harmonic_2000_ang
-    title: {es: "Cercanía armónica angular, 2000 m (red v2)", en: "Angular harmonic closeness, 2000 m (network v2)"}
+    title: {es: "Cercanía armónica angular, 2000 m", en: "Angular harmonic closeness, 2000 m"}
     description:
       es: Cercanía de cada segmento a los demás dentro de 2000 m, por la ruta más simple.
       en: How close each segment is to the others within 2000 m, by the simplest route.
   - <<: *harmonic
     id: centralidad_armonica_5000_v2
+    radius_m: 5000
     style_field: cc_harmonic_5000_ang
-    title: {es: "Cercanía armónica angular, 5000 m (red v2)", en: "Angular harmonic closeness, 5000 m (network v2)"}
+    title: {es: "Cercanía armónica angular, 5000 m", en: "Angular harmonic closeness, 5000 m"}
     description:
       es: Cercanía de cada segmento a los demás dentro de 5000 m, por la ruta más simple.
       en: How close each segment is to the others within 5000 m, by the simplest route.
@@ -86,9 +85,11 @@ layers:
   - &betweenness
     id: intermediacion_800_v2
     network: v2
+    series: {id: intermediacion, title: {es: "Intermediación angular", en: "Angular betweenness"}}
+    radius_m: 800
     style_field: cc_betweenness_800_ang
     kind: sequential
-    title: {es: "Intermediación angular, 800 m (red v2)", en: "Angular betweenness, 800 m (network v2)"}
+    title: {es: "Intermediación angular, 800 m", en: "Angular betweenness, 800 m"}
     description:
       es: Cuántas rutas más simples de hasta 800 m pasan por cada segmento.
       en: How many simplest routes of up to 800 m pass through each segment.
@@ -98,15 +99,17 @@ layers:
     unit: {es: "conteo de rutas", en: "count of routes"}
   - <<: *betweenness
     id: intermediacion_2000_v2
+    radius_m: 2000
     style_field: cc_betweenness_2000_ang
-    title: {es: "Intermediación angular, 2000 m (red v2)", en: "Angular betweenness, 2000 m (network v2)"}
+    title: {es: "Intermediación angular, 2000 m", en: "Angular betweenness, 2000 m"}
     description:
       es: Cuántas rutas más simples de hasta 2000 m pasan por cada segmento.
       en: How many simplest routes of up to 2000 m pass through each segment.
   - <<: *betweenness
     id: intermediacion_5000_v2
+    radius_m: 5000
     style_field: cc_betweenness_5000_ang
-    title: {es: "Intermediación angular, 5000 m (red v2)", en: "Angular betweenness, 5000 m (network v2)"}
+    title: {es: "Intermediación angular, 5000 m", en: "Angular betweenness, 5000 m"}
     description:
       es: Cuántas rutas más simples de hasta 5000 m pasan por cada segmento.
       en: How many simplest routes of up to 5000 m pass through each segment.
