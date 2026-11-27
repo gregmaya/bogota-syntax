@@ -165,7 +165,6 @@ def before_after(
     network: gpd.GeoDataFrame,
     polygons: gpd.GeoDataFrame,
     highlight: gpd.GeoDataFrame | None,
-    caption: str,
     path: Path,
     window_m: float,
     highlight_before: gpd.GeoDataFrame | None = None,
@@ -188,7 +187,6 @@ def before_after(
             highlight.plot(ax=b, color=FIX, lw=2.4, zorder=4)
     for ax in (a, b):
         _scalebar(ax, window_m)
-    fig.text(0.5, -0.02, caption, ha="center", va="top", fontsize=8, wrap=True)
     return _save(fig, path)
 
 
@@ -196,7 +194,6 @@ def single(
     focus: shapely.Point,
     network: gpd.GeoDataFrame,
     polygons: gpd.GeoDataFrame,
-    caption: str,
     path: Path,
     window_m: float,
 ) -> Path:
@@ -206,7 +203,6 @@ def single(
     _base(ax, network, polygons, box)
     ax.scatter([focus.x], [focus.y], s=200, facecolor="none", edgecolor=OPEN, lw=2, zorder=4)
     _scalebar(ax, window_m)
-    fig.text(0.5, -0.02, caption, ha="center", va="top", fontsize=8, wrap=True)
     return _save(fig, path)
 
 
@@ -227,7 +223,8 @@ def make_figures(
     cfg: dict[str, Any],
     out_dir: Path,
 ) -> dict[str, dict[str, Any] | None]:
-    """Figures 1-7 as PNG in `out_dir`. Each is {"path", "caption"}, or None when the
+    """Figures 1-7 as PNG in `out_dir`, without captions (the note carries them). Each
+    is {"path", "caption"}, or None when the
     package has no case of that type. Examples come from `cfg["examples"]`."""
     pr, co, de = package["problemas"], package["correcciones"], package["decisiones_modelado"]
     ex = cfg.get("examples") or {}
@@ -255,7 +252,7 @@ def make_figures(
         hb = before(f) if before else None
         path = out_dir / f"figura_{fig[3:]}_{key}.png"
         text = caption(row)
-        before_after(f, axes, network, polygons, hl, text, path, window, hb)
+        before_after(f, axes, network, polygons, hl, path, window, hb)
         out[fig] = {"path": path, "caption": text}
 
     def fixes(tipo):
@@ -334,7 +331,7 @@ def make_figures(
             f"Figura 6. Caso abierto{_who(row)}: el corredor sigue según los polígonos del "
             "POT, pero falta el tramo en el Eje Vial. No se inventa: lo debe revisar la SDP."
         )
-        path = single(row.geometry, network, polygons, text, out_dir / "figura_6_abierto.png", w)
+        path = single(row.geometry, network, polygons, out_dir / "figura_6_abierto.png", w)
         out["fig6"] = {"path": path, "caption": text}
 
     rel = de[de["tipo"] == "reubicacion_enlace"]
@@ -349,6 +346,6 @@ def make_figures(
             "entran al enlace se llevan a un solo punto de encuentro, para el análisis de red."
         )
         path = out_dir / "figura_7_reubicacion_enlace.png"
-        before_after(f, axes, network, polygons, near(moved, f, 2.5 * w), text, path, 2.5 * w)
+        before_after(f, axes, network, polygons, near(moved, f, 2.5 * w), path, 2.5 * w)
         out["fig7"] = {"path": path, "caption": text}
     return out

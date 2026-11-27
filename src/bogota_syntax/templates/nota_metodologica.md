@@ -59,7 +59,7 @@ $fig6
 
 ### Decisiones de modelado
 
-Para el análisis de red llevamos $n_reubicacion enlaces viales a un solo punto de encuentro: $n_reubicacion_revision por revisión manual y $n_reubicacion_regla por una regla ajustada a esa revisión. También fusionamos $n_fusion_nodos nodos muy cercanos entre sí y redibujamos a mano $km_editados km de líneas ($n_edicion_agregada agregadas, $n_edicion_retirada retiradas). Además simplificamos el trazado (menos vértices, sin zigzags), lo que no se muestra en las capas. Nada de esto es un error del Eje Vial.
+Para el análisis de red llevamos $n_reubicacion enlaces viales a un solo punto de encuentro: $n_reubicacion_revision por revisión manual y $n_reubicacion_regla por una regla ajustada a esa revisión. También fusionamos $n_fusion_nodos nodos muy cercanos entre sí y, después de revisar los enlaces, editamos a mano algunos lugares: retiramos $n_edicion_retirada líneas y dibujamos $n_edicion_agregada en su lugar. Además simplificamos el trazado (menos vértices, sin zigzags), lo que no se muestra en las capas. Nada de esto es un error del Eje Vial.
 
 $fig7
 
