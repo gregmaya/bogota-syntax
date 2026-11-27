@@ -288,3 +288,10 @@ def test_counts_names() -> None:
     assert n["n_abierto"] == 2
     assert n["n_sin_clave"] == int(pr.OBJECTID.isna().sum())
     assert n["n_edicion_agregada"] == 0
+
+
+def test_rows_at_city_limit_are_marked() -> None:
+    pr = points((0, 0), (0, 50), estado=["abierto", "abierto"], tipo=["discontinuidad"] * 2)
+    limit = segs([(-100, 1), (100, 1)])
+    out = sp.mark_limit(pr, limit, limit_m=5)
+    assert out.observacion.tolist() == ["termina en el límite del Distrito", ""]

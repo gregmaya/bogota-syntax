@@ -71,6 +71,7 @@ source = { editable = "." }
 dependencies = [
     { name = "cityseer" },
     { name = "geopandas" },
+    { name = "matplotlib" },
     { name = "neatnet" },
     { name = "osmnx" },
     { name = "pyarrow" },
@@ -93,6 +94,7 @@ dev = [
 requires-dist = [
     { name = "cityseer", specifier = ">=5.8.0" },
     { name = "geopandas", specifier = ">=1.0" },
+    { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "neatnet", specifier = ">=0.1.6" },
     { name = "osmnx", specifier = ">=2.0" },
     { name = "pyarrow", specifier = ">=18" },

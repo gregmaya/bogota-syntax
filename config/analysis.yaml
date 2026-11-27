@@ -192,7 +192,10 @@ sdp_package:
   key_m: 1               # a row takes the keys of the nearest Eje Vial feature within this
   end_match_m: 0.01      # a dead end and a correction line's end are the same point within this
   round_trip_max_m: 0.01 # EPSG:9377 -> PCS_CarMAGBOG -> EPSG:9377 may shift a point this much
+  limit_source: ideca_limite_bogota
+  limit_m: 5             # a problem this close to the Bogotá limit ends there, not a missing segment
   figure_window_m: 100   # half-width of a before / after panel
+  figure_window_small_m: 15  # the same for loose ends and stubs, a few metres long
   contacto: null         # name and email for LEEME.txt, filled in by Gregorio before sending
   examples:              # OBJECTID (CODIGO_ID for reubicacion_enlace) per figure; null = automatic
     extremo_suelto: null

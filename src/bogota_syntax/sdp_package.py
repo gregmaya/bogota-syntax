@@ -8,6 +8,7 @@ EPSG:9377 metres until the GeoPackage is written in the SDP's own PCS_CarMAGBOG.
 from __future__ import annotations
 
 import json
+import warnings
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -109,7 +110,15 @@ def round_trip_error_m(axes_9377: gpd.GeoDataFrame, crs_wkt: str) -> float:
 
 # ── problemas and correcciones ────────────────────────────────────────────────
 
-PROBLEM_COLS = ["tipo", "estado", "correccion", "distancia_m", "longitud_m", *KEYS, "OBJECTID_2"]
+PROBLEM_COLS = [
+    "tipo",
+    "estado",
+    "correccion",
+    "distancia_m",
+    "longitud_m",
+    *KEYS,
+    "OBJECTID_2",
+]
 FIX_COLS = ["tipo", "longitud_m", *KEYS]
 # review.gpkg layer -> correccion label, for the lines that fix a problem
 FIX_LAYERS = {
@@ -225,6 +234,19 @@ def build_problemas(
     return pr.drop(columns="_o").reset_index(drop=True)
 
 
+def mark_limit(pr: gpd.GeoDataFrame, limit: gpd.GeoDataFrame, limit_m: float) -> gpd.GeoDataFrame:
+    """Add `observacion`: rows within `limit_m` metres of the Bogotá limit (`limit`, its
+    boundary as lines or the polygon) end there because the data stops at the city
+    limit, not because a segment is missing."""
+    edge = (
+        shapely.union_all(shapely.boundary(limit.geometry.values))
+        if (limit.geom_type.str.contains("Polygon").any())
+        else shapely.union_all(limit.geometry.values)
+    )
+    at = shapely.distance(pr.geometry.values, edge) <= limit_m
+    return pr.assign(observacion=np.where(at, "termina en el límite del Distrito", ""))
+
+
 def build_correcciones(
     layers: dict[str, gpd.GeoDataFrame], axes: gpd.GeoDataFrame, cfg: dict[str, Any]
 ) -> gpd.GeoDataFrame:
@@ -328,6 +350,9 @@ def counts(package: dict[str, gpd.GeoDataFrame]) -> dict[str, Any]:
     n["n_problemas"] = len(pr)
     n["n_abierto"] = int((pr["estado"] == "abierto").sum())
     n["n_sin_clave"] = int(pr["OBJECTID"].isna().sum())
+    lim = pr.get("observacion", pd.Series("", index=pr.index)) != ""
+    n["n_abierto_limite"] = int(((pr["estado"] == "abierto") & lim).sum())
+    n["n_abierto_faltante"] = n["n_abierto"] - n["n_abierto_limite"]
     for c in ("union", "extension", "conector", "reubicacion_o_edicion"):
         n[f"n_discontinuidad_{c}"] = int(
             ((pr["tipo"] == "discontinuidad") & (pr["correccion"] == c)).sum()
@@ -397,6 +422,8 @@ def run(root: Path) -> dict[str, Any]:
         "decisiones_modelado": build_decisiones(layers),
         "ediciones_manuales": build_ediciones(edits),
     }
+    limit = gpd.read_parquet(data / "interim" / f"{cfg['limit_source']}.parquet").to_crs(CRS)
+    package["problemas"] = mark_limit(package["problemas"], limit, cfg["limit_m"])
     crs_wkt = sdp_crs(root)
     err = round_trip_error_m(axes, crs_wkt)
     if err > cfg["round_trip_max_m"]:
@@ -410,13 +437,21 @@ def run(root: Path) -> dict[str, Any]:
         "n_eje_vial": len(axes),
         "n_eje_sin_codigo": int(axes["CODIGO_ID"].isna().sum()),
     }
+    from bogota_syntax.sdp_figures import make_figures
+
+    polygons = gpd.read_parquet(polys_path).to_crs(CRS)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        figures = make_figures(package, layers, axes, network, polygons, cfg, out / "figuras")
     pr = package["problemas"]
     return n | {
+        "figures": figures,
+        "warnings": [str(w.message) for w in caught],
         "package": package,
         "layers": layers,
         "axes": axes,
         "network": network,
-        "polygons": gpd.read_parquet(polys_path).to_crs(CRS),
+        "polygons": polygons,
         "cfg": cfg,
         "manifest": {k: manifest.get(k, {}) for k in (fg["axes_source"], fg["polygons_source"])},
         "unmatched": pr[pr["OBJECTID"].isna()][["tipo", "estado", "geometry"]],
